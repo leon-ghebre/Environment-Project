@@ -1,0 +1,332 @@
+<!--python3 -m http.server 8000-->
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Water Quality Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after {box-sizing: border-box; margin: 0 ; padding: 0;}
+    :root{
+      --bg-surface: #ffffff;
+      --border-subtle: rgba(0,0,0,0.10);
+      --border-default: rgba(0,0,0,0.18);
+      --radius-lg: 12px;
+      --radius-md: 8px;
+      --text-primary: #1a1a18;
+      --text-secondary: #5f5e5a;
+      --text-tertiary: #888780;
+      --font-mono:"DM Mono", monospace;
+      --font-exo-2: "Exo 2", sans-serif;
+
+    }
+
+    
+    body{
+      background-color: #e6f3e8;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem 0;
+      min-height: 100vh;
+      margin: 0;
+    }
+    main.container {
+      max-width: 420px;
+    }
+    .dashboard{
+      width: 100%;
+      max-width: 1200px;
+      padding: 0 1rem;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .topbar{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .name{
+      font-size: 25px;
+      font-weight: 600;
+      font-family: var(--font-exo-2);
+      color: darkblue;
+    }
+    .selecter{
+      font-family: var(--font-exo-2);
+      font-size: 13px;
+      color: var(--text-primary);
+      background: var(--bg-surface);
+      border: 0.5px solid darkblue;
+      border-radius: var(--radius-md);
+      padding: 7px 30px 7px 14px;
+    }
+    .summary-strip{
+      display: flex;
+      gap: 2.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 0.5px solid var(--border-subtle);
+      flex-wrap: wrap;
+    }
+    .summary-item label{
+      display: block;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-tertiary);
+      margin-bottom: 3px;
+    }
+    .reading-grid{
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .data-square{
+      background: var(--bg-surface);
+      border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+    }
+    .data-value{
+      font-size: 30px;
+      font-family: var(--font-exo-2);
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+    .data-label{
+      font-size: 10px;
+      color: var(--text-tertiary);
+      margin-bottom: 6px;
+    }
+    .data-units{
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-bottom: 10px;
+    }
+    .trend-graph{
+      background: var(--bg-surface);
+      border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+    }
+    .trend-header{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .trend-title{
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .trend-wrap{
+      position: relative;
+      height: 180px;
+    }
+    .trend-placeholder{
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0.5px dashed var(--border-default);
+      border-radius: var(--radius-md);
+      color: var(--text-tertiary);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>  
+  <main class="dashboard" role="main">
+    <header class="topbar">
+      <div class="name">Water Quality Dashboard</div>
+      <select class="selecter">
+        <option value="">Home</option>
+        <option value="">Alert Log</option>
+        <option value="">Advanced Graphs</option>
+      </select>
+    </header>
+    <div class="summary-strip" role="status" aria-live="polite">
+      <div class="summary-item">
+        <label>Last sample:</label>
+        <span id="lastSample">-</span>
+      </div>
+      <div class="summary-item">
+        <label>Total alerts today:</label> 
+        <span class="alert" id="alertCount">-</span>
+      </div>
+      <div class="summary-item">
+        <label>Sites Monitered:</label>
+        <span id="siteCount">-</span>
+      </div>
+    </div>
+      <section class="reading-grid" aria-label="current data">
+        <div class="data-square" id="ph-square">
+          <div class="data-label">PH</div>
+          <div class="data-value" id="val-ph">3.9</div>
+          <div class="data-units" >ph units</div>
+          <span class="status-pill" id="pill-ph"></span>
+        </div>
+        
+        <div class="data-square" id="waterlevel-square">
+          <div class="data-label">WATER LEVEL</div>
+          <div class="data-value" id="val-waterlevel">8</div>
+          <div class="data-units" >cm</div>
+          <span class="status-pill" id="pill-waterlevel"></span>
+        </div>
+
+        <div class="data-square" id="turbidity-square">
+          <div class="data-label">TURBIDITY</div>
+          <div class="data-value" id="val-turbidity">5</div>
+          <div class="data-units" >NTU</div>
+          <span class="status-pill" id="pill-turbidity"></span>
+        </div>
+
+        <div class="data-square" id="flow-square">
+          <div class="data-label">FLOW</div>
+          <div class="data-value" id="val-flow">10</div>
+          <div class="data-units" >m³/s</div>
+          <span class="status-pill" id="pill-flow"></span>
+        </div>
+
+
+      </section>
+
+      <section class="trend-graph">
+        <div class="trend-header">
+          <span class="trend-title">Trend Analysis</span>
+        </div>
+        <div class="trend-placeholder" id="trendPlaceholder">Awaiting data</div>
+        <div class="trend-wrap" id="trendWrap" style="display: none;">
+          <canvas id="trendGraph" aria-label="Trend graph for pH, water level, turbidity and flow rate"></canvas>
+        </div>
+      </section>
+    </main>
+    <script>
+  let trendGraph = null;
+
+  function renderGraph(labels, phData, turbidityData, flowData) {
+    document.getElementById('trendPlaceholder').style.display = 'none';
+    document.getElementById('trendWrap').style.display = 'block';
+
+    const ctx = document.getElementById('trendGraph').getContext('2d');
+
+    if (!trendGraph){
+
+      trendGraph = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'pH',
+              data: phData,
+              borderColor: '#185FA5',
+              backgroundColor: 'rgba(24,95,165,0.07)',
+              borderWidth: 1.5,
+              pointRadius: 0,
+              tension: 0.4,
+              fill: true
+            },
+            {
+              label: 'Turbidity',
+              data: turbidityData,
+              borderColor: '#EF9F27',
+              backgroundColor: 'rgba(239,159,39,0.07)',
+              borderWidth: 1.5,
+              pointRadius: 0,
+              tension: 0.4,
+              fill: true
+            },
+            {
+              label: 'Flow rate',
+              data: flowData,
+              borderColor: '#1D9E75',
+              backgroundColor: 'rgba(29,158,117,0.07)',
+              borderWidth: 1.5,
+              pointRadius: 0,
+              tension: 0.4,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              grid: { color: 'rgba(0,0,0,0.04)' },
+              ticks: {
+                font: { family: 'DM Mono', size: 10 },
+                color: '#888',
+                maxTicksLimit: 7
+              },
+              border: { display: false }
+            },
+            y: {
+              grid: { color: 'rgba(0,0,0,0.04)' },
+              ticks: {
+                font: { family: 'DM Mono', size: 10 },
+                color: '#888'
+              },
+              border: { display: false }
+            }
+          }
+        }
+      });
+    }else{
+      trendGraph.data.labels = labels;
+      trendGraph.data.datasets[0].data = phData;
+      trendGraph.data.datasets[1].data = turbidityData;
+      trendGraph.data.datasets[2].data = flowData;
+      trendGraph.update('none');
+    }
+  }
+  function updateDashboard(data) {
+    document.getElementById('lastSample').textContent = data.current.timestamp;
+    document.getElementById('alertCount').textContent = data.current.alertCount;
+    document.getElementById('siteCount').textContent = data.current.siteCount;
+    document.getElementById('val-ph').textContent = data.current.ph;
+    document.getElementById('val-waterlevel').textContent = data.current.waterLevel;
+    document.getElementById('val-turbidity').textContent = data.current.turbidity;
+    document.getElementById('val-flow').textContent = data.current.flow;
+  }
+
+  async function loadLiveData() {
+    try {
+      const response = await fetch('./dashboard_spoof.json');
+      const data = await response.json();
+
+      updateDashboard(data);
+
+      renderGraph(
+        data.history.labels,
+        data.history.ph,
+        data.history.turbidity,
+        data.history.flow
+      );
+    } catch (error) {
+      console.error('Error loading live data:', error);
+    }
+  }
+
+  loadLiveData();
+  setInterval(loadLiveData, 5000);
+</script>
+  
+  </body>
