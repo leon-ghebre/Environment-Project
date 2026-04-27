@@ -20,7 +20,7 @@ Built for farmers, environmental researchers, and public health officers to dete
 ### Installation
 
 # Clone the repo
-git clone https://github.com/your-repo-url
+git clone https://github.com/leon-ghebre/Environment-Project/tree/main
 
 # Navigate to backend
 cd backend
