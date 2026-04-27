@@ -62,14 +62,6 @@ backend/
 ├── validation/         # Input validation for all endpoints
 └── tests/              # Pytest test suite
 
-## Running Tests
-
-# Run all tests
-pytest
-
-# Run with coverage report
-pytest --cov=. --cov-report=term-missing
-
 ## Coding Standards
 
 This project uses Black and Flake8 enforced via pre-commit hooks.
