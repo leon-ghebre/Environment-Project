@@ -1,3 +1,5 @@
+import pandas as pd
+
 def filter_water_data(site_id, start_date=None, end_date=None): #function that filters water data by site and date range(if specified) and returns a filtered dataframe
     data = df[df["site_id"] == site_id].copy() #selects rows that pertain to the chosen site_id
 
