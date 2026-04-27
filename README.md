@@ -53,7 +53,6 @@ The API will start at http://127.0.0.1:5000
 Full parameter details in the Wiki.
 
 ## Project Structure
-## Project Structure
 
 - `backend/`
   - `app.py` — Entry point, registers all route blueprints
