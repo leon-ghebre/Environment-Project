@@ -53,7 +53,7 @@ The API will start at http://127.0.0.1:5000
 Full parameter details in the Wiki.
 
 ## Project Structure
-
+'''
 backend/
 ├── app.py              # Entry point — registers all route blueprints
 ├── config.py           # All constants and valid values
@@ -61,7 +61,7 @@ backend/
 ├── services/           # Data loading, filtering, aggregation
 ├── validation/         # Input validation for all endpoints
 └── tests/              # Pytest test suite
-
+'''
 ## Coding Standards
 
 This project uses Black and Flake8 enforced via pre-commit hooks.
