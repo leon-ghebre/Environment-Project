@@ -6,7 +6,7 @@ repos:
         - id: black
 
   #Flake8 - catches style issues, unused imports and undefined variables
-  - repo: https://gitlab.com/pycqa/flake8
+  - repo: https://github.com/pycqa/flake8
     rev: 7.0.0
     hooks:
       - id: flake8
