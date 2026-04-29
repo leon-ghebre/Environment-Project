@@ -67,6 +67,10 @@ class WaterReading(Base):
     wx_rh_pct = Column(Float, nullable=True)
     wx_rain_mm_hr = Column(Float, nullable=True)
 
+    # true when a row contains impossible data
+    sensor_fault = Column(Boolean, default=False)
+    fault_reason = Column(String, nullable=True)  # why its flagged true
+
     # links each reading back to the site it belongs to
     site = relationship("Site", back_populates="readings")
 
