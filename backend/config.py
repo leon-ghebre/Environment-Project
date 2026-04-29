@@ -56,6 +56,27 @@ PH_MAX = 14
 TURBIDITY_MIN = 0
 CONDUCTIVITY_MIN = 0
 
+TURBIDITY_MAX = 4000
+CONDUCTIVITY_MAX = 55000
+
+WATER_TEMP_MIN = 0
+WATER_TEMP_MAX = 38
+
+WATER_LEVEL_MIN = 0
+WATER_LEVEL_MAX = 1000
+
+LIGHT_MIN = 0
+LIGHT_MAX = 150000
+
+WX_TEMP_MIN = -24
+WX_TEMP_MAX = 55
+
+WX_RH_MIN = 0
+WX_RH_MAX = 100
+
+WX_RAIN_MIN = 0
+WX_RAIN_MAX = 401
+
 # Alert configuration
 # Lebo Xhosa's acceptance criteria: alert triggers when reading deviates
 # by more than 20% from the 24hr average
