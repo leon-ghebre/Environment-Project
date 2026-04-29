@@ -1,7 +1,7 @@
 """
 database.py
 
-Sets up the database connection for the water quality monitoring backend.
+Sets up the database connection for the water quality monitoring backend
 
 This file creates:
 - the database engine (connects Python to the SQLite database)
@@ -9,9 +9,9 @@ This file creates:
 - the Base class (used when creating tables in models.py)
 
 Persona coverage:
-    - Lebo Xhosa: Supports quick access to the latest water safety readings.
-    - Jack Wilshere: Supports storing historical data for trend analysis.
-    - George Weah: Supports reviewing alerts and site activity over time.
+    - Lebo Xhosa: Supports quick access to the latest water safety readings
+    - Jack Wilshere: Supports storing historical data for trend analysis
+    - George Weah: Supports reviewing alerts and site activity over time
 """
 
 from sqlalchemy import create_engine

@@ -1,7 +1,7 @@
 """
 models.py
 
-Defines the database tables used in the water quality monitoring backend.
+Defines the database tables used in the water quality monitoring backend
 
 This file contains:
 - Site: stores information about each monitoring location
@@ -50,7 +50,7 @@ class WaterReading(Base):
 
     ph = Column(Float, nullable=True)
     turbidity_ntu = Column(Float, nullable=True)
-    conductivity_us_cm = Column(Float, nullable=True)
+    conductivity_uS_cm = Column(Float, nullable=True)
     water_temperature_c = Column(Float, nullable=True)
     water_level_cm = Column(Float, nullable=True)
     light_lux = Column(Float, nullable=True)
