@@ -64,6 +64,7 @@ Full parameter details in the Wiki.
   - `routes/` — HTTP route handlers, no business logic
   - `services/` — Data loading, filtering, aggregation
   - `validation/` — Input validation for all endpoints
+  - `scripts/` — Contains script for setting and loading CSV data into the database 
   - `tests/` — Pytest test suite
 - `frontend/`
 '''
