@@ -6,7 +6,7 @@ Defines the database tables used in the water quality monitoring backend
 This file contains:
 - Site: stores information about each monitoring location
 - WaterReading: stores timestamped sensor readings for each site
-- Alert: stores warning or critical alerts linked to a site
+- Alert: stores warning or critical alerts linked to a site and reading
 """
 
 from sqlalchemy import Boolean, Column, DateTime
@@ -92,12 +92,14 @@ class Alert(Base):
     source_reading_id = Column(
         Integer,
         ForeignKey("water_readings.id"),
-        nullable=True,
+        nullable=False,
         index=True,
     )
 
     alert_type = Column(String, nullable=False)
     severity = Column(String, nullable=False)
+
+    message = Column(String, nullable=False)
 
     started_at = Column(DateTime, nullable=False, index=True)
     ended_at = Column(DateTime, nullable=True)  # none = still active
