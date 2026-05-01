@@ -58,6 +58,8 @@ def get_latest():
                 {
                     "site_id": site.id,
                     "site_code": site.site_code,
+                    "name": site.name,
+                    "description": site.description,
                     "recorded_at": reading.recorded_at.isoformat(),
                     "ph": reading.ph,
                     "turbidity_ntu": reading.turbidity_ntu,
