@@ -77,6 +77,13 @@ WX_RH_MAX = 100
 WX_RAIN_MIN = 0
 WX_RAIN_MAX = 401
 
+# water quality thresholds based on SANS 241:2015
+
+PH_CRITICAL_MIN = 6.0
+PH_CRITICAL_MAX = 9.0
+
+CONDUCTIVITY_CRITICAL_LIMIT = 1500
+
 # Alert configuration
 # Lebo Xhosa's acceptance criteria: alert triggers when reading deviates
 # by more than 20% from the 24hr average
