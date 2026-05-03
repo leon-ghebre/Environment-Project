@@ -1,9 +1,11 @@
 repos:
+  # Black — auto-formats code before every commit
   - repo: https://github.com/psf/black
     rev: 24.4.2
     hooks:
       - id: black
 
+  # Flake8 — catches unused imports, undefined variables, style issues
   - repo: https://github.com/PyCQA/flake8
     rev: 7.0.0
     hooks:

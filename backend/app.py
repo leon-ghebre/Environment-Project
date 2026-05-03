@@ -1,13 +1,16 @@
 """
 app.py
 
-This is the entry point for the Water Quality monitoring API - it registers all route blueprints and starts the flask development server
+This is the entry point for the Water Quality monitoring API - it
+registers all route blueprints and starts the flask development server
 
 """
 
 from flask import Flask
+
 from routes.sites import sites_bp
 from routes.latest import latest_bp
+
 from routes.summary import summary_bp
 from routes.timeseries import timeseries_bp
 from routes.alerts import alerts_bp

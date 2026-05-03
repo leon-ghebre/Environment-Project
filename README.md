@@ -5,6 +5,10 @@
 A web application for monitoring water quality sensor data across multiple sites in South Africa. 
 Built for farmers, environmental researchers, and public health officers to detect contamination risks and analyse trends.
 
+## System Overview
+
+The system processes water quality data from CSV datasets using a Flask backend, performs validation and aggregation, and exposes the data via REST API endpoints for frontend visualisation.
+
 ## Tech Stack
 
 **Backend:** Python, Flask, pandas  
@@ -20,7 +24,7 @@ Built for farmers, environmental researchers, and public health officers to dete
 ### Installation
 
 # Clone the repo
-git clone https://github.com/leon-ghebre/Environment-Project/tree/main
+git clone https://github.com/leon-ghebre/Environment-Project.git
 
 # Navigate to backend
 cd backend
@@ -60,6 +64,7 @@ Full parameter details in the Wiki.
   - `routes/` — HTTP route handlers, no business logic
   - `services/` — Data loading, filtering, aggregation
   - `validation/` — Input validation for all endpoints
+  - `scripts/` — Contains script for setting and loading CSV data into the database 
   - `tests/` — Pytest test suite
 - `frontend/`
 '''
