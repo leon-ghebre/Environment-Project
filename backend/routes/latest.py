@@ -39,7 +39,7 @@ def get_latest():
         site = db.query(Site).filter(Site.site_code == site_code).first()
 
         if site is None:
-            return jsonify({"error": f"Invalid site_code: {site_code}"}), 404
+            return jsonify({"error": f"Invalid site_code: {site_code}"}), 400
 
         # return last readings for that site code or error if nothing
         reading = (
