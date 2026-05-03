@@ -1,0 +1,4 @@
+{
+    "name": "Water Quality Backend",
+    "postCreateCommand": "pip install -r backend/requirements_dev.txt && cd/backend && pre-commit install"
+}

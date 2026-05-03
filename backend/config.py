@@ -4,6 +4,7 @@ config.py
 This is the core configuration for the water quality monitoring api. All the constraints, valid values and thresholds are defined here.
 This means that changing a value here will update that value across the entiere codebase.
 """
+
 # Dataset
 CSV_PATH = "data/water_quality.csv"
 
@@ -15,15 +16,11 @@ VALID_METRICS = [
     "conductivity_uS_cm",
     "water_temperature_c",
     "water_level_cm",
-    "light_lux"
+    "light_lux",
 ]
 
 # Weather context columns that will be available in export but not valid for a timeseries metric
-WEATHER_COLUMNS = [
-    "wx_temp_c",
-    "wx_rh_pct",
-    "wx_rain_mm_hr"
-]
+WEATHER_COLUMNS = ["wx_temp_c", "wx_rh_pct", "wx_rain_mm_hr"]
 
 # Alert flag columns - boolean indicators that're derived from sensor readings
 ALERT_COLUMNS = [
@@ -31,19 +28,16 @@ ALERT_COLUMNS = [
     "alert_ph",
     "alert_turbidity",
     "alert_turbidity_crit",
-    "alert_conductivity"
+    "alert_conductivity",
 ]
 
-#Fault columns: our own self created columns that are used to identify and label sensor errors
-FAULT_COLUMNS = [
-    "sensor_fault",
-    "fault_reason"
-]
+# Fault columns: our own self created columns that are used to identify and label sensor errors
+FAULT_COLUMNS = ["sensor_fault", "fault_reason"]
 
-#Valid time frequencies
+# Valid time frequencies
 VALID_FREQUENCIES = ["h", "D"]
 
-#Status values that're used in the dataset
+# Status values that're used in the dataset
 VALID_STATUSES = ["normal", "warning", "critical"]
 
 # Data validation thresholds
@@ -67,8 +61,7 @@ EXPORT_COLUMNS = [
     "conductivity_uS_cm",
     "water_temperature_c",
     "water_level_cm",
-    "light_lux"
-    "status",
+    "light_lux" "status",
     "alert_triggered",
     "alert_ph",
     "alert_turbidity",
@@ -78,6 +71,5 @@ EXPORT_COLUMNS = [
     "wx_rh_pct",
     "wx_rain_mm_hr",
     "sensor_fault",
-    "fault_reason"
+    "fault_reason",
 ]
-
