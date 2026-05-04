@@ -23,6 +23,7 @@ from validation.import_validators import (
     check_alert_flag,
     validate_row,
 )
+from services.alert_service import create_alert_events_for_reading
 
 
 def get_or_create_site(db, site_code, name, description, latitude, longitude):
@@ -243,6 +244,16 @@ def main():
 
             # Add this reading to the database session
             db.add(reading)
+
+            # flush gives this reading an ID before the full commit which
+            # is needed because alert_events.source_reading_id links to
+            # reading.id
+            db.flush()
+
+            # create linked alert event rows if this reading triggered an alert
+            # or failed validation.
+            if reading.alert_triggered or reading.sensor_fault:
+                create_alert_events_for_reading(db, reading)
 
             # commits every 1000 rows so memory does not grow too much
             if index % 1000 == 0:
