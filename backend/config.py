@@ -8,7 +8,7 @@ the entire codebase.
 """
 
 # Dataset
-CSV_PATH = "../data/water_quality.csv"
+CSV_PATH = "../data/water_quality_sample.csv"
 
 # Database
 DATABASE_URL = "sqlite:///./water_quality.db"

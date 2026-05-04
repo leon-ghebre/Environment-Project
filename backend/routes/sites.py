@@ -1,34 +1,38 @@
 """
 routes/sites.py
 
-This file defines the GET/sites endpoint and returns a list of all unique site IDs present in the dataset.
+Defines the GET /sites endpoint.
+Returns a list of all unique site codes from the database.
 
-Persona Coverage:
-    - Jack Wilshere: In order for filtering functionality, Jack must know which sites exist before querying trends or exporting data.
-    
-    - George Weah: George must know available monitoring locations before he's able to compare readings across regions
-
-    - Lebo Xhosa: In order to populate his list of water sources on the dashboard he needs to know which sites are present in the database.
-
-
+Persona coverage:
+    - All personas: prerequisite for every other endpoint
+    - Jack Wilshere: populates site filter dropdown (US-01, US-02)
+    - George Weah: discovers all monitoring locations (US-09)
+    - Lebo Xhosa: builds list of water sources on dashboard (US-07)
 """
 
 from flask import Blueprint, jsonify
-from services.data_loader import defines
+
+from database.database import SessionLocal
+from database.models import Site
 
 sites_bp = Blueprint("sites", __name__)
 
+
 @sites_bp.route("/sites", methods=["GET"])
-def get_sites() -> tuple:
+def get_sites():
+    """Returns all site codes available in the database.
+
+    Returns:
+        tuple: A JSON array of site code strings with HTTP 200.
+
+    Example response:
+        ["site_downstream", "site_reservoir", "site_upstream"]
     """
-    This function returns all unique site IDs from the dataset.
-
-    No parameters are required.
-    It returns every site that has at least one reading in the dataset.
-
-    Returns: A JSONN array of site ID strings with HTTP 200.
-
-    """
-
-    site_ids = sorted(df["site_id"].unique().tolist())
-    return jsonify(site_ids), 200
+    db = SessionLocal()
+    try:
+        sites = db.query(Site.site_code).all()
+        site_codes = sorted([site.site_code for site in sites])
+        return jsonify(site_codes), 200
+    finally:
+        db.close()
