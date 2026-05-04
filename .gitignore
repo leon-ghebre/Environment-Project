@@ -1,2 +1,6 @@
 data/water_quality_sample.csv
 backend/water_quality.db
+data/water_quality.csv
+**/__pycache__
+**/*.pyc
+**/*.pyc
