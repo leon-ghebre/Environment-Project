@@ -126,26 +126,3 @@ def export_csv():
 
 
 """
-EXPORT_COLUMNS = [
-    "timestamp",
-    "site_code",
-    "ph",
-    "turbidity_ntu",
-    "conductivity_uS_cm",
-    "water_temperature_c",
-    "water_level_cm",
-    "light_lux",
-    "status",
-    "alert_triggered",
-    "alert_ph",
-    "alert_turbidity",
-    "alert_turbidity_crit",
-    "alert_conductivity",
-    "wx_temp_c",
-    "wx_rh_pct",
-    "wx_rain_mm_hr",
-    "sensor_fault",
-    "fault_reason",
-]
-
-"""
