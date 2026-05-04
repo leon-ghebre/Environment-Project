@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Water Quality Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    *, *::before, *::after {box-sizing: border-box; margin: 0 ; padding: 0;}
+    :root{
+        --bg-surface: #ffffff;
+        --bg-page:    #f4f4f2;
+        --border-subtle: rgba(0,0,0,0.10);        
+        --border-default: rgba(0,0,0,0.18);
+        --radius-lg: 12px;         
+        --radius-md: 8px;
+        --text-primary: #1a1a18;
+        --text-secondary: #5f5e5a;
+        --text-tertiary: #888780;
+        --font-mono:"DM Mono", monospace;
+        --font-exo-2: "Exo 2", sans-serif;
+        --color-ph:        #1835FA;
+        --color-turbidity: #EF9F27;
+        --color-flow:      #1D9E75;
+        --color-level:     #9B59B6;
+
+    }
+    body{
+      background-color: #e6f3e8;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem 0;
+      min-height: 100vh;
+      margin: 0;
+    }
+    main.container {
+      max-width: 420px;
+    }
+    .dashboard{
+      width: 100%;
+      max-width: 1200px;
+      padding: 0 1rem;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .topbar{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .name{
+      font-size: 25px;
+      font-weight: 600;
+      font-family: var(--font-exo-2);
+      color: darkblue;
+    }
+    .selecter{
+      font-family: var(--font-exo-2);
+      font-size: 13px;
+      color: var(--text-primary);
+      background: var(--bg-surface);
+      border: 0.5px solid darkblue;
+      border-radius: var(--radius-md);
+      padding: 7px 30px 7px 14px;
+    }
+    .summary-strip{
+      display: flex;
+      gap: 2.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 0.5px solid var(--border-subtle);
+      flex-wrap: wrap;
+    }
+    .summary-item label{
+      display: block;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-tertiary);
+      margin-bottom: 3px;
+    }
+    .filter-box{
+      background: var(--bg-surface);
+      border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1.25rem;
+    }
+    .filter-group{
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .filter-label{
+      font-size: 10px;
+      color: var(--text-tertiary);
+    }
+    .filter-selector,
+    .filter-date{
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-primary);
+      background: var(--bg-page);
+      border: 0.5px solid var(--border-default);
+      border-radius: var(--radius-md);
+      padding: 7px 10px;
+      width: 100%;
+      cursor: pointer;
+      appearance: none;
+      
+    }
+    .filter-group.sensors{
+      grid-column: span 2;
+    }
+    .checkbox-group{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .sensor-checkbox{
+      position: relative;
+    }
+    .sensor-checkbox label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: opacity 0.15s, border-color 0.15s;
+      
+      background: var(--bg-page);
+      color: var(--text-tertiary);
+      border-color: var(--border-default);
+    }
+    .sensor-checkbox input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .sensor-checkbox.ph input:checked + label { border-color: var(--color-ph); background: rgba(24,95,165,0.08);  }
+    .sensor-checkbox.turbidity input:checked + label { border-color: var(--color-turbidity); background: rgba(239,159,39,0.08); }
+    .sensor-checkbox.flow input:checked + label { border-color: var(--color-flow); background: rgba(29,158,117,0.08); }
+    .sensor-checkbox.level input:checked + label { border-color: var(--color-level); background: rgba(155,89,182,0.08); }
+    .sensor-checkbox label .swatch {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .sensor-checkbox input:checked + label{
+      color: var(--text-primary);
+      opacity: 1;
+    }
+    .trend-graph{
+      background: var(--bg-surface);
+      border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+    }
+    .trend-header{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .trend-title{
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .trend-wrap{
+      position: relative;
+      height: 380px;
+    }
+    .trend-placeholder{
+      height: 380px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0.5px dashed var(--border-default);
+      border-radius: var(--radius-md);
+      color: var(--text-tertiary);
+      font-size: 13px;
+    }
+
+  </style>
+</head>
+<body>  
+  <main class="dashboard" role="main">
+    <header class="topbar">
+      <div class="name">Water Quality Dashboard</div>
+      <select class="selecter" id="pageSelect">
+        <option value="index.html">Dashboard</option>
+        <option value="">Alert Log</option>
+        <option value="advanced-graphs.html" selected>Advanced Graphs</option>
+      </select>
+    </header>
+    <div class="summary-strip" role="status" aria-live="polite">
+      <div class="summary-item">
+        <label>Last sample:</label>
+        <span id="lastSample">-</span>
+      </div>
+      <div class="summary-item">
+        <label>Total alerts today:</label> 
+        <span class="alert" id="alertCount">-</span>
+      </div>
+      <div class="summary-item">
+        <label>Sites Monitered:</label>
+        <span id="siteCount">-</span>
+      </div>
+    </div>
+    <section class="filter-box" aria-label="Graph controls">
+      <div class="filter-group">
+        <span class="filter-label">site</span>
+        <select class="filter-selector" id="siteSelector" aria-label="Select site">
+          <option value="All">All sites</option>
+
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Graph type</span>
+        <select class="filter-selector" id="graphType" aria-label="Select graph type">
+          <option value="line">Line</option>
+          <option value="bar">Bar</option>
+          <option value="scatter">Scatter</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">From</span>
+        <input class="filter-date" type="date" id="dateFrom" aria-label="Start date">
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">To</span>
+        <input class="filter-date" type="date" id="dateTo" aria-label="End date">
+      </div>
+      <div class="filter-group sensors">
+        <span class="filter-label">Sensors</span>
+        <div class="checkbox-group" role="group" aria-label="Select sensors"></div>
+
+        <div class="sensor-checkbox ph">
+          <input type="checkbox" id="checkPh" value="ph" checked>
+          <label for="checkPh">
+            <span class="swatch" style="background: var(--color-ph)"></span>
+            pH
+            </label>
+        </div>
+
+        <div class="sensor-checkbox turbidity">
+          <input type="checkbox" id="checkTurbidity" value="turbidity" checked>
+          <label for="checkTurbidity">
+            <span class="swatch" style="background: var(--color-turbidity)"></span>
+            Turbidity
+          </label>
+        </div>
+
+        <div class="sensor-checkbox flow">
+          <input type="checkbox" id="checkFlow" value="flow" checked>
+          <label for="checkFlow">
+            <span class="swatch" style="background: var(--color-flow)"></span>
+            Flow
+          </label>
+        </div>
+        <div class="sensor-checkbox level">
+          <input type="checkbox" id="checkLevel" value="level" checked>
+          <label for="checkLevel">
+            <span class="swatch" style="background: var(--color-level)"></span>
+            Water level
+          </label>
+        </div>
+      </div>
+    
+    </section>
+    <section class="trend-graph">
+        <div class="trend-header">
+          <span class="trend-title">Trend Analysis</span>
+        </div>
+        <div class="trend-placeholder" id="trendPlaceholder">Awaiting data</div>
+        <div class="trend-wrap" id="trendWrap" style="display: none;">
+          <div id="advancedGraph" aria-label="Advanced trend graph for pH, water level, turbidity and flow rate"></div>
+        </div>
+      </section>
+</main>
+<script>
+    const API = "http://127.0.0.1:5000";
+    document.getElementById("pageSelect").addEventListener("change", function(){
+      const selectedPage=this.value;
+      window.location.href=selectedPage;
+      })
+    function getSelectedSensors(){
+      const checkboxes = document.querySelectorAll(".sensor-checkbox input:checked")
+      return Array.from(checkboxes).map(cb => cb.value);
+    }
+    
+    document.querySelectorAll(".sensor-checkbox input").forEach(cb=>{
+      cb.addEventListener("change", ()=>{
+        const site = document.getElementById("siteSelector").value;
+        loadGraph(site);
+      });
+    });
+      
+    const sensors= {
+      ph:{
+        label: "pH",
+        api:"ph",
+        color: "#185FA5",
+
+      },
+      turbidity:{
+        label:"turbidity",
+        api: "turbidity_ntu",
+        color: "#EF9F27",
+        
+      },
+      flow:{
+        label:"flow",
+        api: "flow",
+        color:"#1D9E75",
+        
+      },
+      level:{
+        label:"water level",
+        api: "water_level_cm",
+        color:"#9B59B6",
+        
+      }
+      
+    }
+    document.getElementById("siteSelector").addEventListener("change", e => {
+      loadGraph(e.target.value);
+    });
+
+    document.getElementById("graphType").addEventListener("change", () => {
+      const site = document.getElementById("siteSelector").value;
+      loadGraph(site);
+    });
+
+    document.querySelectorAll(".sensor-checkbox input").forEach(cb => {
+      cb.addEventListener("change", () => {
+        const site = document.getElementById("siteSelector").value;
+        loadGraph(site);
+      });
+    });
+    const state={
+      site: "all",
+      chartType: "line",
+      dataFrom: "null",
+      dataTo: "null",
+      activeSensors:["pH","turbidity","flow","level"],
+      data:"null",
+
+    }
+    async function loadGraph(siteId) {
+      const active = getSelectedSensors();
+      if (active.length===0){
+        document.getElementById("trendWrap").style.display = "none";
+        document.getElementById("trendPlaceholder").style.display= "flex";
+        return;
+      }
+      document.getElementById("trendWrap").style.display="block";
+      document.getElementById("trendPlaceholder").style.display= "none";
+
+      const typeMap = {
+        line:{type:"scatter", mode: "lines" },
+        scatter:{ type: "scatter", mode: "markers" },
+        bar:{ type: "bar",     mode: undefined}
+      };
+
+      const results = await Promise.all(active.map(id=>{
+        const metric= sensors[id].api;
+        const parametres= new URLSearchParams({
+          site_id: siteId,
+          metric: metric,
+          freq: "D",
+        })
+        return fetch(`${API}/timeseries?${parametres}`)
+        .then(res => res.json())
+        .then(data =>({id, data}))
+      }))
+    
+      const traces= results.map(({id, data})=>{
+      const s =sensors[id]
+      return {
+        name: s.label,
+        x: data.map(p => p.recorded_at),
+        y: data.map(p => p.avg),
+        type: "scatter",
+        mode: "lines",
+        line: { color: s.color, width: 2 },
+        hovertemplate: `<b>${s.label}</b>: %{y}<extra></extra>`
+      };
+    })
+    const layout ={
+      margin: { t: 20, r: 10, b: 40, l: 40 },
+      paper_bgcolor: "transparent",
+      plot_bgcolor: "transparent",
+      hovermode: "x unified",
+      xaxis: { title: "Date" },
+      yaxis: { title: "Value" }
+    };
+    Plotly.react("advancedGraph", traces, layout, {
+    responsive: true,
+    displaylogo: false,
+    });
+}
+async function loadSites() {
+  const res   = await fetch(`${API}/sites`);
+  const sites = await res.json();
+  const select = document.getElementById("siteSelector");
+
+  sites.forEach(id => {
+    const opt= document.createElement("option");
+    opt.value= id;
+    opt.textContent= id.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    select.appendChild(opt);
+  });
+  loadGraph(sites[0]);
+window.addEventListener("DOMContentLoaded",loadSites);
+ 
+ 
+
+      
+
+</script>
+

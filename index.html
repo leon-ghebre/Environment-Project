@@ -116,6 +116,9 @@
       color: var(--text-tertiary);
       margin-bottom: 10px;
     }
+    .metric-card:hover {
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
     .trend-graph{
       background: var(--bg-surface);
       border: 0.5px solid var(--border-subtle);
@@ -155,10 +158,10 @@
   <main class="dashboard" role="main">
     <header class="topbar">
       <div class="name">Water Quality Dashboard</div>
-      <select class="selecter">
-        <option value="">Home</option>
+      <select class="selecter" id="pageSelect">
+        <option value="index.html" selected>Dashboard</option>
         <option value="">Alert Log</option>
-        <option value="">Advanced Graphs</option>
+        <option value="advanced-graphs.html">Advanced Graphs</option>
       </select>
     </header>
     <div class="summary-strip" role="status" aria-live="polite">
@@ -217,7 +220,11 @@
         </div>
       </section>
     </main>
-    <script>
+<script>
+  document.getElementById("pageSelect").addEventListener("change", function(){
+    const selectedPage=this.value;
+    window.location.href=selectedPage;
+  })
   let trendGraph = null;
 
   function renderGraph(labels, phData, turbidityData, flowData) {
