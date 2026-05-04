@@ -1,0 +1,103 @@
+"""
+export.py
+
+Provides the endpoint to be able to download filtered water quality
+as a CSV file with /GET export
+
+Filters are:
+    - monitoring site (site_id)
+    - start date
+    - end date
+
+Persona Coverage:
+    - Jack Wilshere: a reseacher who needs to download raw filtered
+    site analysis data for offline analysis. This lets him have a clean
+    CSV file with data he can upload to external data analysis tools 
+    rather than having to copy and paste readings from the dashboard
+
+"""
+
+from config import EXPORT_COLUMNS
+from flask import Blueprint, Response, jsonify, request
+
+import csv
+from io import StringIO
+from datetime import datetime
+from database.database import SessionLocal
+from database.models import Site, WaterReading
+
+export_bp = Blueprint("export", __name__)
+
+@export_bp.route("/export", methods=["GET"])
+def export_csv():
+    """
+
+    query params:
+        - site_code (required):  'site_upstream', site_downstream',
+        'site_resovoir'
+        - start (optional): YYYY-MM-DD
+        - end (optional): YYYY-MM-DD
+
+    """
+
+    site_code = request.args.get("site_code")
+    start = request.args.get("start")
+    end = request.args.get("end")
+
+    if not site_code:
+        return jsonify({"error": "site_code is required"}), 400
+
+    db = SessionLocal()
+
+    try:
+        # query by the site_code first
+        query = (
+            db.query(WaterReading)
+            .join(Site)
+            .filter(Site.site_code == site_code)
+        )
+
+        # add date queries if they've been added
+        if start:
+            try:
+                start_date = datetime.strptime(start, "%Y-%m-%d")
+            except valueError:
+                return jsonify({"error": "start must be YYYY-MM-DD"}), 400
+
+            query = query.filter(WaterReading.recorded_at >= start_date)
+        
+        if end:
+            try:
+                end_date = datetime.strptime(end, "%Y-%m-%d")
+            except ValueError:
+                return jsonify({"error": "end must be YYYY-MM-DD"}), 400
+
+            query = query.filter(WaterReading.recorded_at <= end_date)
+
+        readings = query.order_by(WaterReading.recorded_at.asc()).all()
+
+        if not readings:
+            return jsonify({"error": "no data found for selected filters"}), 404
+
+
+EXPORT_COLUMNS = [
+    "timestamp",
+    "site_id",
+    "ph",
+    "turbidity_ntu",
+    "conductivity_uS_cm",
+    "water_temperature_c",
+    "water_level_cm",
+    "light_lux",
+    "status",
+    "alert_triggered",
+    "alert_ph",
+    "alert_turbidity",
+    "alert_turbidity_crit",
+    "alert_conductivity",
+    "wx_temp_c",
+    "wx_rh_pct",
+    "wx_rain_mm_hr",
+    "sensor_fault",
+    "fault_reason",
+]
