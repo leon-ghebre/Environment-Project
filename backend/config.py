@@ -86,7 +86,7 @@ ALERT_DEVIATION_THRESHOLD = 0.2
 # site IDs and measurement values
 EXPORT_COLUMNS = [
     "timestamp",
-    "site_id",
+    "site_code",
     "ph",
     "turbidity_ntu",
     "conductivity_uS_cm",
