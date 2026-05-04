@@ -1,45 +1,328 @@
-{% extends "base.html" %}
-{% set active = "alerts" %}
-{% block title %}Alerts — Water Monitoring{% endblock %}
-{% block content %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Alert Log — Water Quality Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<div class="toolbar">
-  <h1 class="page-title">Alerts</h1>
-  <div class="toolbar-right">
-    <select id="al-days" class="select-input">
-      <option value="7" selected>Last 7 days</option>
-      <option value="14">Last 14 days</option>
-      <option value="30">Last 30 days</option>
-    </select>
-  </div>
-</div>
+    :root {
+      --bg-surface: #ffffff;
+      --border-subtle: rgba(0,0,0,0.10);
+      --border-default: rgba(0,0,0,0.18);
+      --radius-lg: 12px;
+      --radius-md: 8px;
+      --text-primary: #1a1a18;
+      --text-secondary: #5f5e5a;
+      --text-tertiary: #888780;
+      --font-mono: "DM Mono", monospace;
+      --font-exo-2: "Exo 2", sans-serif;
+      --critical: #c0392b;
+      --caution: #e67e22;
+    }
 
-<div class="alert-summary" id="al-summary">
-  <div class="stat-label">Total</div>
-</div>
+    body {
+      background-color: #e6f3e8;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem 0;
+      min-height: 100vh;
+      margin: 0;
+    }
 
-<section class="section">
-  <h2 class="section-title">Alert Log</h2>
-  <div class="table-wrapper">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Site</th>
-          <th>Type</th>
-          <th>Time</th>
-          <th>Severity</th>
-        </tr>
-      </thead>
-      <tbody id="al-list">
-        <tr>
-          <td colspan="4" class="muted">Loading…</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</section>
+    .dashboard {
+      width: 100%;
+      max-width: 1200px;
+      padding: 0 1rem;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
 
-{% endblock %}
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/alerts.js') }}"></script>
-{% endblock %}
+    /* ── Topbar ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .name {
+      font-size: 25px;
+      font-weight: 600;
+      font-family: var(--font-exo-2);
+      color: darkblue;
+    }
+
+    .selecter {
+      font-family: var(--font-exo-2);
+      font-size: 13px;
+      color: var(--text-primary);
+      background: var(--bg-surface);
+      border: 0.5px solid darkblue;
+      border-radius: var(--radius-md);
+      padding: 7px 30px 7px 14px;
+      cursor: pointer;
+    }
+
+    /* ── Date strip ── */
+    .date-strip {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-tertiary);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── Summary strip ── */
+    .summary-strip {
+      display: flex;
+      gap: 2.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 0.5px solid var(--border-subtle);
+      flex-wrap: wrap;
+    }
+
+    .summary-item label {
+      display: block;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-tertiary);
+      margin-bottom: 3px;
+    }
+
+    .summary-item span {
+      font-family: var(--font-exo-2);
+      font-size: 15px;
+      color: var(--text-primary);
+    }
+
+    /* ── Filter row ── */
+    .filter-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font-exo-2);
+      color: var(--text-secondary);
+    }
+
+    /* ── Table card ── */
+    .table-card {
+      background: var(--bg-surface);
+      border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-exo-2);
+      font-size: 13px;
+    }
+
+    .data-table thead tr {
+      border-bottom: 0.5px solid var(--border-subtle);
+    }
+
+    .data-table th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-tertiary);
+      font-weight: 400;
+    }
+
+    .data-table td {
+      padding: 12px 16px;
+      color: var(--text-primary);
+      border-bottom: 0.5px solid var(--border-subtle);
+    }
+
+    .data-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tbody tr:hover {
+      background: rgba(0,0,0,0.02);
+    }
+
+    .muted {
+      color: var(--text-tertiary);
+      font-style: italic;
+    }
+
+    .sev-high {
+      color: var(--critical);
+      font-weight: 600;
+    }
+
+    .sev-medium {
+      color: var(--caution);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <main class="dashboard" role="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div>
+        <div class="name">Alert Log</div>
+        <div class="date-strip" id="today-date">—</div>
+      </div>
+      <select class="selecter" id="page-nav" onchange="navigatePage(this.value)">
+        <option value="dashboard.html">Home</option>
+        <option value="alerts.html" selected>Alert Log</option>
+        <option value="graphs.html">Advanced Graphs</option>
+      </select>
+    </header>
+
+    <!-- Summary strip -->
+    <div class="summary-strip" role="status" aria-live="polite">
+      <div class="summary-item">
+        <label>Total alerts</label>
+        <span id="al-total">—</span>
+      </div>
+      <div class="summary-item">
+        <label>High severity</label>
+        <span id="al-high" style="color: var(--critical);">—</span>
+      </div>
+      <div class="summary-item">
+        <label>Medium severity</label>
+        <span id="al-medium" style="color: var(--caution);">—</span>
+      </div>
+      <div class="summary-item">
+        <label>Period</label>
+        <span id="al-period">Last 7 days</span>
+      </div>
+    </div>
+
+    <!-- Filter row -->
+    
+
+    <!-- Table -->
+    <section>
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Site</th>
+              <th>Type</th>
+              <th>Time</th>
+              <th>Severity</th>
+            </tr>
+          </thead>
+          <tbody id="al-list">
+            <tr><td colspan="4" class="muted">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ── Date display ──
+    const dateEl = document.getElementById('today-date');
+    dateEl.textContent = new Date().toLocaleDateString('en-GB', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    // ── Navigation ──
+    function navigatePage(page) {
+      if (page) window.location.href = page;
+    }
+
+    // ── Metrics map ──
+    const METRICS = {
+      ph:         { icon: '🧪', label: 'pH' },
+      turbidity:  { icon: '💧', label: 'Turbidity' },
+      flow:       { icon: '🌊', label: 'Flow' },
+      waterlevel: { icon: '📏', label: 'Water Level' },
+    };
+
+    function fmtDate(ts) {
+      if (!ts) return '—';
+      return new Date(ts).toLocaleString('en-GB', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    function renderSummary(alerts) {
+      const high   = alerts.filter(a => a.severity === 'high').length;
+      const medium = alerts.filter(a => a.severity === 'medium' || a.severity === 'low').length;
+      document.getElementById('al-total').textContent  = alerts.length;
+      document.getElementById('al-high').textContent   = high;
+      document.getElementById('al-medium').textContent = medium;
+      const days = document.getElementById('al-days').value;
+      document.getElementById('al-period').textContent = `Last ${days} days`;
+    }
+
+    function renderList(alerts) {
+      const tbody = document.getElementById('al-list');
+      if (!alerts.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="muted">No alerts found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = alerts.map(a => {
+        const m = METRICS[a.metric] || { icon: '⚠️', label: a.metric };
+        const sevClass = a.severity === 'high' ? 'sev-high' : 'sev-medium';
+        return `
+          <tr>
+            <td>${a.site || '—'}</td>
+            <td>${m.icon} ${m.label}</td>
+            <td>${fmtDate(a.timestamp)}</td>
+            <td class="${sevClass}">${(a.severity || '').toUpperCase()}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    async function loadAlerts() {
+      const days = document.getElementById('al-days').value;
+      const site = window.currentSite || '';
+      const url  = `/api/alerts?site=${encodeURIComponent(site)}&days=${days}`;
+      try {
+        const res    = await fetch(url);
+        const alerts = await res.json();
+        renderSummary(alerts);
+        renderList(alerts);
+      } catch {
+        // Fallback demo data when API not available
+        const demo = [
+          { site: 'Site A', metric: 'ph',        timestamp: new Date().toISOString(), severity: 'high'   },
+          { site: 'Site B', metric: 'turbidity',  timestamp: new Date().toISOString(), severity: 'medium' },
+          { site: 'Site A', metric: 'flow',       timestamp: new Date().toISOString(), severity: 'high'   },
+          { site: 'Site C', metric: 'waterlevel', timestamp: new Date().toISOString(), severity: 'medium' },
+        ];
+        renderSummary(demo);
+        renderList(demo);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadAlerts);
+  </script>
+</body>
+</html>
