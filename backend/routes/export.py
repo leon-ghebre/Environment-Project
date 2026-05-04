@@ -5,14 +5,14 @@ Provides the endpoint to be able to download filtered water quality
 as a CSV file with /GET export
 
 Filters are:
-    - monitoring site (site_id)
+    - monitoring site (site_code)
     - start date
     - end date
 
 Persona Coverage:
     - Jack Wilshere: a reseacher who needs to download raw filtered
     site analysis data for offline analysis. This lets him have a clean
-    CSV file with data he can upload to external data analysis tools 
+    CSV file with data he can upload to external data analysis tools
     rather than having to copy and paste readings from the dashboard
 
 """
@@ -27,6 +27,7 @@ from database.database import SessionLocal
 from database.models import Site, WaterReading
 
 export_bp = Blueprint("export", __name__)
+
 
 @export_bp.route("/export", methods=["GET"])
 def export_csv():
@@ -51,21 +52,17 @@ def export_csv():
 
     try:
         # query by the site_code first
-        query = (
-            db.query(WaterReading)
-            .join(Site)
-            .filter(Site.site_code == site_code)
-        )
+        query = db.query(WaterReading).join(Site).filter(Site.site_code == site_code)
 
         # add date queries if they've been added
         if start:
             try:
-                start_date = datetime.strptime(start, "%Y-%m-%d")
-            except valueError:
+                start_date = datetime.strptime(start, "%Y-%m-%d")  # iso format
+            except ValueError:
                 return jsonify({"error": "start must be YYYY-MM-DD"}), 400
 
             query = query.filter(WaterReading.recorded_at >= start_date)
-        
+
         if end:
             try:
                 end_date = datetime.strptime(end, "%Y-%m-%d")
@@ -79,10 +76,59 @@ def export_csv():
         if not readings:
             return jsonify({"error": "no data found for selected filters"}), 404
 
+        output = StringIO()
+        writer = csv.DictWriter(output, fieldnames=EXPORT_COLUMNS)
+        writer.writeheader()
 
+        for reading in readings:
+            row = {}
+            for column in EXPORT_COLUMNS:
+                if column == "timestamp":
+                    value = reading.recorded_at.strftime("%Y-%m-%dT%H:%M:%S")
+                elif column == "site_code":
+                    value = site_code
+                else:
+                    value = getattr(reading, column, None)
+
+                row[column] = value
+
+            writer.writerow(row)
+
+        csv_data = output.getvalue()
+        output.close()
+
+        # create custom filename based on filters (easier to recognise)
+        filename = f"water_quality_{site_code}"
+
+        if start and end:
+            filename += f"_{start}_to_{end}"
+        elif start:
+            filename += f"_from_{start}"
+        elif end:
+            filename += f"_to_{end}"
+
+        filename += ".csv"
+
+        # return the downloadable csv file
+        # disposition = download as attachment not as page
+        return Response(
+            csv_data,
+            mimetype="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+
+    except Exception as error:
+        print(f"Export error: {error}")
+        return jsonify({"error": "server error"}), 500
+
+    finally:
+        db.close()
+
+
+"""
 EXPORT_COLUMNS = [
     "timestamp",
-    "site_id",
+    "site_code",
     "ph",
     "turbidity_ntu",
     "conductivity_uS_cm",
@@ -101,3 +147,5 @@ EXPORT_COLUMNS = [
     "sensor_fault",
     "fault_reason",
 ]
+
+"""
