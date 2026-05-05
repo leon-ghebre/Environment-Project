@@ -200,6 +200,10 @@
       color: var(--text-tertiary);
       font-size: 13px;
     }
+    #advancedGraph {
+      width: 100%;
+      height: 380px;
+}
 
   </style>
 </head>
@@ -231,7 +235,7 @@
       <div class="filter-group">
         <span class="filter-label">site</span>
         <select class="filter-selector" id="siteSelector" aria-label="Select site">
-          <option value="All">All sites</option>
+          
 
         </select>
       </div>
@@ -299,7 +303,7 @@
       </section>
 </main>
 <script>
-    const API = "http://127.0.0.1:5000";
+    const API = "https://zany-space-goldfish-pjpg4jp75v4q379qp-5000.app.github.dev/";
     document.getElementById("pageSelect").addEventListener("change", function(){
       const selectedPage=this.value;
       window.location.href=selectedPage;
@@ -360,7 +364,7 @@
     });
     const state={
       site: "all",
-      chartType: "line",
+      chartType: "",
       dataFrom: "null",
       dataTo: "null",
       activeSensors:["pH","turbidity","flow","level"],
@@ -376,12 +380,16 @@
       }
       document.getElementById("trendWrap").style.display="block";
       document.getElementById("trendPlaceholder").style.display= "none";
+      const graphType= document.getElementById("graphType").value
 
       const typeMap = {
         line:{type:"scatter", mode: "lines" },
         scatter:{ type: "scatter", mode: "markers" },
         bar:{ type: "bar",     mode: undefined}
       };
+      const {type, mode}= typeMap[graphType]
+      const dateFrom = document.getElementById("dateFrom").value
+      const dateTo = document.getElementById("dateTo").value
 
       const results = await Promise.all(active.map(id=>{
         const metric= sensors[id].api;
@@ -389,11 +397,13 @@
           site_id: siteId,
           metric: metric,
           freq: "D",
-        })
+          ...(dateFrom &&{start:dateFrom}),
+          ...(dateTo &&{end: dateTo})
+        });
         return fetch(`${API}/timeseries?${parametres}`)
         .then(res => res.json())
         .then(data =>({id, data}))
-      }))
+      }));
     
       const traces= results.map(({id, data})=>{
       const s =sensors[id]
@@ -401,12 +411,12 @@
         name: s.label,
         x: data.map(p => p.recorded_at),
         y: data.map(p => p.avg),
-        type: "scatter",
-        mode: "lines",
+        type,
+        mode,
         line: { color: s.color, width: 2 },
         hovertemplate: `<b>${s.label}</b>: %{y}<extra></extra>`
       };
-    })
+    });
     const layout ={
       margin: { t: 20, r: 10, b: 40, l: 40 },
       paper_bgcolor: "transparent",
@@ -421,8 +431,8 @@
     });
 }
 async function loadSites() {
-  const res   = await fetch(`${API}/sites`);
-  const sites = await res.json();
+  const response   = await fetch(`${API}/sites`);
+  const sites = await response.json();
   const select = document.getElementById("siteSelector");
 
   sites.forEach(id => {
@@ -432,6 +442,8 @@ async function loadSites() {
     select.appendChild(opt);
   });
   loadGraph(sites[0]);
+}
+  
 window.addEventListener("DOMContentLoaded",loadSites);
  
  

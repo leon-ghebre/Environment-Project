@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
   <style>
     *, *::before, *::after {box-sizing: border-box; margin: 0 ; padding: 0;}
     :root{
@@ -24,6 +24,10 @@
       --text-tertiary: #888780;
       --font-mono:"DM Mono", monospace;
       --font-exo-2: "Exo 2", sans-serif;
+      --color-ph:        #1835FA;
+      --color-turbidity: #EF9F27;
+      --color-flow:      #1D9E75;
+      --color-level:     #9B59B6;
 
     }
 
@@ -108,12 +112,12 @@
     }
     .data-label{
       font-size: 10px;
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       margin-bottom: 6px;
     }
     .data-units{
       font-size: 12px;
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       margin-bottom: 10px;
     }
     .metric-card:hover {
@@ -140,10 +144,10 @@
     }
     .trend-wrap{
       position: relative;
-      height: 180px;
+      height: 380px;
     }
     .trend-placeholder{
-      height: 180px;
+      height: 380px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -152,6 +156,18 @@
       color: var(--text-tertiary);
       font-size: 13px;
     }
+    #trendGraph{
+      height: 100%;
+      width: 100%;
+    }
+    #ph-square { border-left: 6px solid var(--color-ph); }
+    #val-ph {color: var(--color-ph)}
+    #turbidity-square { border-left: 6px solid var(--color-turbidity); }
+    #val-turbidity {color: var(--color-turbidity)}
+    #flow-square { border-left: 6px solid var(--color-flow); }
+    #val-flow {color: var(--color-flow)}
+    #waterlevel-square { border-left: 6px solid var(--color-level); }
+    #val-waterlevel {color: var(--color-level)}
   </style>
 </head>
 <body>  
@@ -181,28 +197,28 @@
       <section class="reading-grid" aria-label="current data">
         <div class="data-square" id="ph-square">
           <div class="data-label">PH</div>
-          <div class="data-value" id="val-ph">3.9</div>
+          <div class="data-value" id="val-ph"></div>
           <div class="data-units" >ph units</div>
           <span class="status-pill" id="pill-ph"></span>
         </div>
         
         <div class="data-square" id="waterlevel-square">
           <div class="data-label">WATER LEVEL</div>
-          <div class="data-value" id="val-waterlevel">8</div>
+          <div class="data-value" id="val-waterlevel"></div>
           <div class="data-units" >cm</div>
           <span class="status-pill" id="pill-waterlevel"></span>
         </div>
 
         <div class="data-square" id="turbidity-square">
           <div class="data-label">TURBIDITY</div>
-          <div class="data-value" id="val-turbidity">5</div>
+          <div class="data-value" id="val-turbidity"></div>
           <div class="data-units" >NTU</div>
           <span class="status-pill" id="pill-turbidity"></span>
         </div>
 
         <div class="data-square" id="flow-square">
           <div class="data-label">FLOW</div>
-          <div class="data-value" id="val-flow">10</div>
+          <div class="data-value" id="val-flow"></div>
           <div class="data-units" >m³/s</div>
           <span class="status-pill" id="pill-flow"></span>
         </div>
@@ -216,117 +232,117 @@
         </div>
         <div class="trend-placeholder" id="trendPlaceholder">Awaiting data</div>
         <div class="trend-wrap" id="trendWrap" style="display: none;">
-          <canvas id="trendGraph" aria-label="Trend graph for pH, water level, turbidity and flow rate"></canvas>
+          <div id="trendGraph" aria-label="Trend graph for pH, water level, turbidity and flow rate"></div>
         </div>
       </section>
     </main>
 <script>
+  const API = "https://zany-space-goldfish-pjpg4jp75v4q379qp-5000.app.github.dev/";
+
   document.getElementById("pageSelect").addEventListener("change", function(){
     const selectedPage=this.value;
     window.location.href=selectedPage;
-  })
+  });
   let trendGraph = null;
-
-  function renderGraph(labels, phData, turbidityData, flowData) {
+  
+  function renderGraph(labels, phData, turbidityData, flowData, levelData) {
     document.getElementById('trendPlaceholder').style.display = 'none';
     document.getElementById('trendWrap').style.display = 'block';
 
-    const ctx = document.getElementById('trendGraph').getContext('2d');
-
-    if (!trendGraph){
-
-      trendGraph = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              label: 'pH',
-              data: phData,
-              borderColor: '#185FA5',
-              backgroundColor: 'rgba(24,95,165,0.07)',
-              borderWidth: 1.5,
-              pointRadius: 0,
-              tension: 0.4,
-              fill: true
-            },
-            {
-              label: 'Turbidity',
-              data: turbidityData,
-              borderColor: '#EF9F27',
-              backgroundColor: 'rgba(239,159,39,0.07)',
-              borderWidth: 1.5,
-              pointRadius: 0,
-              tension: 0.4,
-              fill: true
-            },
-            {
-              label: 'Flow rate',
-              data: flowData,
-              borderColor: '#1D9E75',
-              backgroundColor: 'rgba(29,158,117,0.07)',
-              borderWidth: 1.5,
-              pointRadius: 0,
-              tension: 0.4,
-              fill: true
-            }
-          ]
+      const traces=[
+        {
+          name: 'pH',
+          x: labels,
+          y: phData,
+          type: 'scatter',
+          mode: 'lines',
+          line: { color: '#185FA5', width: 2 }
         },
-        options: {
+        {
+          name: 'Turbidity',
+          x: labels,
+          y: turbidityData,
+          type: 'scatter',
+          mode: 'lines',
+          line: { color: '#EF9F27', width: 2 }
+        },
+        {
+          name: 'Flow rate',
+          x: labels,
+          y: flowData,
+          type: 'scatter',
+          mode: 'lines',
+          line: { color: '#1D9E75', width: 2 },
+        },
+         {
+          name: 'Water Level',
+          x: labels,
+          y: levelData,
+          type: 'scatter',
+          mode: 'lines',
+          line: { color: '#9B59B6', width: 2 }
+         },
+      ];
+        
+        const layout ={
+          margin: { t: 10, r: 10, b: 30, l: 30 },
+          paper_bgcolor: "transparent",
+          plot_bgcolor: "transparent",
+          hovermode: "x unified",
+          xaxis: { title: "Date" },
+          yaxis: { title: "Value" },
+        };
+        Plotly.react("trendGraph", traces, layout, {
           responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              grid: { color: 'rgba(0,0,0,0.04)' },
-              ticks: {
-                font: { family: 'DM Mono', size: 10 },
-                color: '#888',
-                maxTicksLimit: 7
-              },
-              border: { display: false }
-            },
-            y: {
-              grid: { color: 'rgba(0,0,0,0.04)' },
-              ticks: {
-                font: { family: 'DM Mono', size: 10 },
-                color: '#888'
-              },
-              border: { display: false }
-            }
-          }
-        }
-      });
-    }else{
-      trendGraph.data.labels = labels;
-      trendGraph.data.datasets[0].data = phData;
-      trendGraph.data.datasets[1].data = turbidityData;
-      trendGraph.data.datasets[2].data = flowData;
-      trendGraph.update('none');
-    }
+          displaylogo: false,
+        });
   }
+    
+  
+        
+
   function updateDashboard(data) {
-    document.getElementById('lastSample').textContent = data.current.timestamp;
+    const latestRead= new Date(latestPh.recorded_at);
+    document.getElementById('lastSample').textContent = latestRead.toLocaleString();
     document.getElementById('alertCount').textContent = data.current.alertCount;
     document.getElementById('siteCount').textContent = data.current.siteCount;
     document.getElementById('val-ph').textContent = data.current.ph;
     document.getElementById('val-waterlevel').textContent = data.current.waterLevel;
     document.getElementById('val-turbidity').textContent = data.current.turbidity;
     document.getElementById('val-flow').textContent = data.current.flow;
+    document.getElementById('val-level').textContent = data.current.level;
   }
 
   async function loadLiveData() {
     try {
-      const response = await fetch('./dashboard_spoof.json');
-      const data = await response.json();
+      const siteId="all"
+    
+      const [phData, turbidityData, levelData, flowData] = await Promise.all([
+        fetch(`${API}/timeseries?site_id=${siteId}&metric=ph&freq=D`).then(r => r.json()),
+        fetch(`${API}/timeseries?site_id=${siteId}&metric=turbidity_ntu&freq=D`).then(r => r.json()),
+        fetch(`${API}/timeseries?site_id=${siteId}&metric=water_level_cm&freq=D`).then(r => r.json()),
+        fetch(`${API}/timeseries?site_id=${siteId}&metric=flow&freq=D`).then(r => r.json()),
+      ]);
 
-      updateDashboard(data);
+      const latestPh = phData[phData.length - 1];
+      const latestLevel = levelData[levelData.length - 1];
+      const latestTurbidity = turbidityData[turbidityData.length - 1];
+      const latestFlow = flowData[flowData.length - 1];
+
+      document.getElementById('lastSample').textContent = latestPh.recorded_at;
+      document.getElementById('val-ph').textContent = latestPh?.avg;
+      document.getElementById('val-waterlevel').textContent = latestLevel.avg;
+      document.getElementById('val-turbidity').textContent = latestTurbidity.avg;
+      document.getElementById('val-flow').textContent = latestFlow.avg;
 
       renderGraph(
-        data.history.labels,
-        data.history.ph,
-        data.history.turbidity,
-        data.history.flow
-      );
+        phData.map(p => p.recorded_at),
+        phData.map(p => p.avg),
+        turbidityData.map(p => p.avg),
+        flowData.map(p => p.avg),
+        levelData.map(p => p.avg)
+      )
+
     } catch (error) {
       console.error('Error loading live data:', error);
     }
@@ -336,4 +352,4 @@
   setInterval(loadLiveData, 5000);
 </script>
   
-  </body>
+</body>
