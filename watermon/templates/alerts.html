@@ -111,6 +111,11 @@
     .filter-label { font-size: 10px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-3); }
     .filter-selector,
     .filter-date { font-family: var(--font-mono); font-size: 13px; color: var(--text-1); background: var(--bg-surface2); border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); padding: 7px 10px; width: 100%; cursor: pointer; appearance: none; }
+
+    /* colour the severity options in the dropdown */
+    .filter-selector option[value="high"]   { color: var(--critical); }
+    .filter-selector option[value="medium"] { color: var(--caution);  }
+
     .filter-group.sensors { grid-column: span 2; }
     .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; }
     .sensor-checkbox { position: relative; }
@@ -168,6 +173,7 @@
     </div>
 
     <section class="filter-box" aria-label="Alert filters">
+
       <div class="filter-group">
         <span class="filter-label">Site</span>
         <select class="filter-selector" id="siteSelector" onchange="loadAlerts()">
@@ -177,14 +183,26 @@
           <option value="Reservoir">Reservoir</option>
         </select>
       </div>
+
+      <div class="filter-group">
+        <span class="filter-label">Severity</span>
+        <select class="filter-selector" id="severityFilter" onchange="loadAlerts()">
+          <option value="">All</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+        </select>
+      </div>
+
       <div class="filter-group">
         <span class="filter-label">From</span>
         <input class="filter-date" type="date" id="dateFrom" onchange="loadAlerts()" />
       </div>
+
       <div class="filter-group">
         <span class="filter-label">To</span>
         <input class="filter-date" type="date" id="dateTo" onchange="loadAlerts()" />
       </div>
+
       <div class="filter-group sensors">
         <span class="filter-label">Sensors</span>
         <div class="checkbox-group">
@@ -206,6 +224,7 @@
           </div>
         </div>
       </div>
+
     </section>
 
     <section>
@@ -222,6 +241,7 @@
     </section>
 
   </main>
+
   <script>
     const API = 'http://127.0.0.1:5000';
 
@@ -266,7 +286,7 @@
     function renderSummary(alerts) {
       document.getElementById('al-total').textContent  = alerts.length;
       document.getElementById('al-high').textContent   = alerts.filter(a => a.severity === 'high').length;
-      document.getElementById('al-medium').textContent = alerts.filter(a => a.severity !== 'high').length;
+      document.getElementById('al-medium').textContent = alerts.filter(a => a.severity === 'medium').length;
       const from = document.getElementById('dateFrom').value;
       const to   = document.getElementById('dateTo').value;
       document.getElementById('al-period').textContent = `${from} → ${to}`;
@@ -294,17 +314,18 @@
     }
 
     async function loadAlerts() {
-      const site   = document.getElementById('siteSelector').value;
-      const from   = document.getElementById('dateFrom').value;
-      const to     = document.getElementById('dateTo').value;
-      const active = getActiveSensors();
+      const site     = document.getElementById('siteSelector').value;
+      const severity = document.getElementById('severityFilter').value;
+      const from     = document.getElementById('dateFrom').value;
+      const to       = document.getElementById('dateTo').value;
+      const active   = getActiveSensors();
 
       let alerts = [];
       try {
         const params = new URLSearchParams();
-        if (site) params.set('site', site);
-        if (from) params.set('from', from);
-        if (to)   params.set('to', to);
+        if (site)     params.set('site', site);
+        if (from)     params.set('from', from);
+        if (to)       params.set('to', to);
         alerts = await fetch(`${API}/api/alerts?${params}`).then(r => r.json());
       } catch {
         const sites = ['Upstream', 'Downstream', 'Reservoir'];
@@ -316,9 +337,11 @@
         }));
       }
 
-      if (from)   alerts = alerts.filter(a => a.timestamp >= from);
-      if (to)     alerts = alerts.filter(a => a.timestamp.slice(0, 10) <= to);
-      if (site)   alerts = alerts.filter(a => a.site === site);
+      /* ── Client-side filters ── */
+      if (from)     alerts = alerts.filter(a => a.timestamp >= from);
+      if (to)       alerts = alerts.filter(a => a.timestamp.slice(0, 10) <= to);
+      if (site)     alerts = alerts.filter(a => a.site === site);
+      if (severity) alerts = alerts.filter(a => a.severity === severity);
       if (active.length < Object.keys(SENSORS).length) {
         alerts = alerts.filter(a => active.includes(a.metric));
       }
