@@ -24,10 +24,10 @@
       --text-tertiary: #888780;
       --font-mono:"DM Mono", monospace;
       --font-exo-2: "Exo 2", sans-serif;
-      --color-ph:        #1835FA;
+      --color-ph: #1835FA;
       --color-turbidity: #EF9F27;
-      --color-flow:      #1D9E75;
-      --color-level:     #9B59B6;
+      --color-temperature: #1D9E75;
+      --color-level: #9B59B6;
 
     }
 
@@ -164,8 +164,8 @@
     #val-ph {color: var(--color-ph)}
     #turbidity-square { border-left: 6px solid var(--color-turbidity); }
     #val-turbidity {color: var(--color-turbidity)}
-    #flow-square { border-left: 6px solid var(--color-flow); }
-    #val-flow {color: var(--color-flow)}
+    #temperature-square { border-left: 6px solid var(--color-temperature); }
+    #val-temperature {color: var(--color-temperature)}
     #waterlevel-square { border-left: 6px solid var(--color-level); }
     #val-waterlevel {color: var(--color-level)}
   </style>
@@ -216,11 +216,11 @@
           <span class="status-pill" id="pill-turbidity"></span>
         </div>
 
-        <div class="data-square" id="flow-square">
-          <div class="data-label">FLOW</div>
-          <div class="data-value" id="val-flow"></div>
-          <div class="data-units" >m³/s</div>
-          <span class="status-pill" id="pill-flow"></span>
+        <div class="data-square" id="temperature-square">
+          <div class="data-label">WATER TEMPERATURE</div>
+          <div class="data-value" id="val-temperature"></div>
+          <div class="data-units" >°C</div>
+          <span class="status-pill" id="pill-temperature"></span>
         </div>
 
 
@@ -245,7 +245,7 @@
   });
   let trendGraph = null;
   
-  function renderGraph(labels, phData, turbidityData, flowData, levelData) {
+  function renderGraph(labels, ph, turbidity_ntu, water_temperature_c, water_level_cm) {
     document.getElementById('trendPlaceholder').style.display = 'none';
     document.getElementById('trendWrap').style.display = 'block';
 
@@ -253,7 +253,7 @@
         {
           name: 'pH',
           x: labels,
-          y: phData,
+          y: ph,
           type: 'scatter',
           mode: 'lines',
           line: { color: '#185FA5', width: 2 }
@@ -261,15 +261,15 @@
         {
           name: 'Turbidity',
           x: labels,
-          y: turbidityData,
+          y: turbidity_ntu,
           type: 'scatter',
           mode: 'lines',
           line: { color: '#EF9F27', width: 2 }
         },
         {
-          name: 'Flow rate',
+          name: 'Water temperature',
           x: labels,
-          y: flowData,
+          y: water_temperature_c,
           type: 'scatter',
           mode: 'lines',
           line: { color: '#1D9E75', width: 2 },
@@ -277,7 +277,7 @@
          {
           name: 'Water Level',
           x: labels,
-          y: levelData,
+          y: water_level_cm,
           type: 'scatter',
           mode: 'lines',
           line: { color: '#9B59B6', width: 2 }
@@ -298,49 +298,35 @@
         });
   }
     
-  
-        
-
-  function updateDashboard(data) {
-    const latestRead= new Date(latestPh.recorded_at);
-    document.getElementById('lastSample').textContent = latestRead.toLocaleString();
-    document.getElementById('alertCount').textContent = data.current.alertCount;
-    document.getElementById('siteCount').textContent = data.current.siteCount;
-    document.getElementById('val-ph').textContent = data.current.ph;
-    document.getElementById('val-waterlevel').textContent = data.current.waterLevel;
-    document.getElementById('val-turbidity').textContent = data.current.turbidity;
-    document.getElementById('val-flow').textContent = data.current.flow;
-    document.getElementById('val-level').textContent = data.current.level;
-  }
 
   async function loadLiveData() {
     try {
       const siteId="all"
     
-      const [phData, turbidityData, levelData, flowData] = await Promise.all([
-        fetch(`${API}/timeseries?site_id=${siteId}&metric=ph&freq=D`).then(r => r.json()),
-        fetch(`${API}/timeseries?site_id=${siteId}&metric=turbidity_ntu&freq=D`).then(r => r.json()),
-        fetch(`${API}/timeseries?site_id=${siteId}&metric=water_level_cm&freq=D`).then(r => r.json()),
-        fetch(`${API}/timeseries?site_id=${siteId}&metric=flow&freq=D`).then(r => r.json()),
+      const [phData, turbidityData, levelData, temperatureData] = await Promise.all([
+        fetch(`${API}/timeseries?site_code=${siteId}&metric=ph&freq=D`).then(r => r.json()),
+        fetch(`${API}/timeseries?site_code=${siteId}&metric=turbidity_ntu&freq=D`).then(r => r.json()),
+        fetch(`${API}/timeseries?site_code=${siteId}&metric=water_level_cm&freq=D`).then(r => r.json()),
+        fetch(`${API}/timeseries?site_code=${siteId}&metric=water_temperature_c&freq=D`).then(r => r.json()),
       ]);
 
       const latestPh = phData[phData.length - 1];
       const latestLevel = levelData[levelData.length - 1];
       const latestTurbidity = turbidityData[turbidityData.length - 1];
-      const latestFlow = flowData[flowData.length - 1];
+      const latestTemperature = temperatureData[temperatureData.length - 1];
 
       document.getElementById('lastSample').textContent = latestPh.recorded_at;
-      document.getElementById('val-ph').textContent = latestPh?.avg;
-      document.getElementById('val-waterlevel').textContent = latestLevel.avg;
-      document.getElementById('val-turbidity').textContent = latestTurbidity.avg;
-      document.getElementById('val-flow').textContent = latestFlow.avg;
+      document.getElementById('val-ph').textContent = latestPh?.ph;
+      document.getElementById('val-waterlevel').textContent = latestLevel.water_level_cm;
+      document.getElementById('val-turbidity').textContent = latestTurbidity.turbidity_ntu;
+      document.getElementById('val-temperature').textContent = latestTemperature.water_temperature_c;
 
       renderGraph(
         phData.map(p => p.recorded_at),
-        phData.map(p => p.avg),
-        turbidityData.map(p => p.avg),
-        flowData.map(p => p.avg),
-        levelData.map(p => p.avg)
+        phData.map(p => p.ph),
+        turbidityData.map(p => p.turbidity_ntu),
+        temperatureData.map(p => p.water_temperature_c),
+        levelData.map(p => p.water_level_cm)
       )
 
     } catch (error) {

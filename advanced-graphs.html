@@ -23,10 +23,16 @@
         --text-tertiary: #888780;
         --font-mono:"DM Mono", monospace;
         --font-exo-2: "Exo 2", sans-serif;
-        --color-ph:        #1835FA;
-        --color-turbidity: #EF9F27;
-        --color-flow:      #1D9E75;
-        --color-level:     #9B59B6;
+        --color-ph: #1835FA;
+        --color-turbidity: #f57d1b;
+        --color-level: #9B59B6;
+        --color-conductivity: #6bff15;
+        --color-temp: #1D9E75;
+        --color-wxTemp: #ff0000;
+        --color-wxRh: #35fafa;
+        --color-wxRain: #f31bc4;
+        --color-light: #edf10f;
+
 
     }
     body{
@@ -124,14 +130,17 @@
       grid-column: span 2;
     }
     .checkbox-group{
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
+      align-items: center;
     }
     .sensor-checkbox{
       position: relative;
     }
     .sensor-checkbox label {
+      width: 100%;
+      justify-content: flex-start;
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -155,8 +164,13 @@
     }
     .sensor-checkbox.ph input:checked + label { border-color: var(--color-ph); background: rgba(24,95,165,0.08);  }
     .sensor-checkbox.turbidity input:checked + label { border-color: var(--color-turbidity); background: rgba(239,159,39,0.08); }
-    .sensor-checkbox.flow input:checked + label { border-color: var(--color-flow); background: rgba(29,158,117,0.08); }
     .sensor-checkbox.level input:checked + label { border-color: var(--color-level); background: rgba(155,89,182,0.08); }
+    .sensor-checkbox.temperature input:checked + label { border-color: var(--color-temp); background: rgba(29,158,117,0.08);  }
+    .sensor-checkbox.conductivity input:checked + label { border-color: var(--color-conductivity); background: rgba(107, 255, 21, 0.08); }
+    .sensor-checkbox.wxRain input:checked + label { border-color: var(--color-wxRain); background: rgba(243, 27, 196, 0.08);  }
+    .sensor-checkbox.wxRh input:checked + label { border-color: var(--color-wxRh); background: rgba(53, 250, 250, 0.08);  }
+    .sensor-checkbox.wxTemp input:checked + label { border-color: var(--color-wxTemp); background: rgba(255, 0, 0, 0.08);  }
+    .sensor-checkbox.light input:checked + label { border-color: var(--color-light); background: rgba(241, 196, 15, 0.10);  }
     .sensor-checkbox label .swatch {
       width: 8px;
       height: 8px;
@@ -209,6 +223,7 @@
 </head>
 <body>  
   <main class="dashboard" role="main">
+
     <header class="topbar">
       <div class="name">Water Quality Dashboard</div>
       <select class="selecter" id="pageSelect">
@@ -217,27 +232,28 @@
         <option value="advanced-graphs.html" selected>Advanced Graphs</option>
       </select>
     </header>
+
     <div class="summary-strip" role="status" aria-live="polite">
       <div class="summary-item">
         <label>Last sample:</label>
         <span id="lastSample">-</span>
       </div>
+
       <div class="summary-item">
         <label>Total alerts today:</label> 
         <span class="alert" id="alertCount">-</span>
       </div>
+
       <div class="summary-item">
         <label>Sites Monitered:</label>
         <span id="siteCount">-</span>
       </div>
+
     </div>
     <section class="filter-box" aria-label="Graph controls">
       <div class="filter-group">
         <span class="filter-label">site</span>
-        <select class="filter-selector" id="siteSelector" aria-label="Select site">
-          
-
-        </select>
+        <select class="filter-selector" id="siteSelector" aria-label="Select site"></select>
       </div>
       <div class="filter-group">
         <span class="filter-label">Graph type</span>
@@ -257,12 +273,13 @@
       </div>
       <div class="filter-group sensors">
         <span class="filter-label">Sensors</span>
-        <div class="checkbox-group" role="group" aria-label="Select sensors"></div>
+        <div class="checkbox-group" role="group" aria-label="Select sensors">
 
         <div class="sensor-checkbox ph">
           <input type="checkbox" id="checkPh" value="ph" checked>
           <label for="checkPh">
-            <span class="swatch" style="background: var(--color-ph)"></span>
+            <span class="swatch" style="background: var(--color-ph)">
+            </span>
             pH
             </label>
         </div>
@@ -275,13 +292,6 @@
           </label>
         </div>
 
-        <div class="sensor-checkbox flow">
-          <input type="checkbox" id="checkFlow" value="flow" checked>
-          <label for="checkFlow">
-            <span class="swatch" style="background: var(--color-flow)"></span>
-            Flow
-          </label>
-        </div>
         <div class="sensor-checkbox level">
           <input type="checkbox" id="checkLevel" value="level" checked>
           <label for="checkLevel">
@@ -289,6 +299,54 @@
             Water level
           </label>
         </div>
+         <div class="sensor-checkbox temperature">
+          <input type="checkbox" id="checkTemperature" value="temperature" checked>
+          <label for="checkTemperature">
+            <span class="swatch" style="background: var(--color-temp)"></span>
+            Water temperature
+            </label>
+        </div>
+         <div class="sensor-checkbox conductivity">
+          <input type="checkbox" id="checkConductivity" value="conductivity" checked>
+          <label for="checkConductivity">
+            <span class="swatch" style="background: var(--color-conductivity)"></span>
+            Conductivity
+            </label>
+        </div>
+
+         <div class="sensor-checkbox wxTemp">
+          <input type="checkbox" id="checkWxtemp" value="wxTemp" checked>
+          <label for="checkWxtemp">
+            <span class="swatch" style="background: var(--color-wxTemp)"></span>
+            Air temperature
+            </label>
+        </div>
+
+         <div class="sensor-checkbox wxRh">
+          <input type="checkbox" id="checkWxrh" value="wxRh" checked>
+          <label for="checkWxrh">
+            <span class="swatch" style="background: var(--color-wxRh)"></span>
+            Humidity
+            </label>
+        </div>
+
+         <div class="sensor-checkbox wxRain">
+          <input type="checkbox" id="checkWxrain" value="wxRain" checked>
+          <label for="checkWxrain">
+            <span class="swatch" style="background: var(--color-wxRain)"></span>
+            Rainfall
+            </label>
+        </div>
+
+         <div class="sensor-checkbox light">
+          <input type="checkbox" id="checkLight" value="light" checked>
+          <label for="checkLight">
+            <span class="swatch" style="background: var(--color-light)"></span>
+            Light level
+            </label>
+        </div>
+      
+      </div>
       </div>
     
     </section>
@@ -333,17 +391,42 @@
         color: "#EF9F27",
         
       },
-      flow:{
-        label:"flow",
-        api: "flow",
-        color:"#1D9E75",
-        
-      },
+      
       level:{
         label:"water level",
         api: "water_level_cm",
         color:"#9B59B6",
         
+      },
+      conductivity:{
+          label: "Conductivity",
+          api: "conductivity_us_cm",
+          color: "#6bff15" 
+        },
+        temperature:{
+          label: "Water temperature",
+          api: "water_temperature_c",
+          color:"#1D9E75"
+        },
+      wxTemp: { 
+          label: "Air Temp",
+          api: "wx_temp_c",
+          color: "#ff0000" 
+        },
+      wxRh: { 
+        label: "Humidity",
+        api: "wx_rh_pct",
+        color: "#35fafa" 
+      },
+      wxRain: { 
+        label: "Rain",
+        api: "wx_rain_mm_hr",
+        color: "#f31bc4" 
+      },
+      light: { 
+        label: "Light",
+        api: "light_lux",
+        color: "#edf10f" 
       }
       
     }
@@ -352,6 +435,16 @@
     });
 
     document.getElementById("graphType").addEventListener("change", () => {
+      const site = document.getElementById("siteSelector").value;
+      loadGraph(site);
+    });
+
+    document.getElementById("dateFrom").addEventListener("change", () =>{
+      const site = document.getElementById("siteSelector").value;
+      loadGraph(site);
+    });
+
+    document.getElementById("dateTo").addEventListener("change", () =>{
       const site = document.getElementById("siteSelector").value;
       loadGraph(site);
     });
@@ -367,7 +460,7 @@
       chartType: "",
       dataFrom: "null",
       dataTo: "null",
-      activeSensors:["pH","turbidity","flow","level"],
+      activeSensors:["ph","turbidity","level","conductivity", "wxTemp", "wxRh", "wxRain","light","temperature" ],
       data:"null",
 
     }
@@ -384,8 +477,8 @@
 
       const typeMap = {
         line:{type:"scatter", mode: "lines" },
-        scatter:{ type: "scatter", mode: "markers" },
-        bar:{ type: "bar",     mode: undefined}
+        scatter:{ type: "scatter", mode: "markers"},
+        bar:{ type: "bar", mode: undefined}
       };
       const {type, mode}= typeMap[graphType]
       const dateFrom = document.getElementById("dateFrom").value
@@ -394,26 +487,35 @@
       const results = await Promise.all(active.map(id=>{
         const metric= sensors[id].api;
         const parametres= new URLSearchParams({
-          site_id: siteId,
+          site_code: siteId,
           metric: metric,
           freq: "D",
           ...(dateFrom &&{start:dateFrom}),
           ...(dateTo &&{end: dateTo})
         });
         return fetch(`${API}/timeseries?${parametres}`)
-        .then(res => res.json())
-        .then(data =>({id, data}))
+          .then(res => res.json())
+          .then(data =>{
+            console.log("RAW RESPONSE:", id, data);
+            if (!Array.isArray(data)) {
+              console.error("BAD RESPONSE for", id, data);
+              return { id, data: [] };
+            }
+            return{id, data};
+          
+          });
       }));
     
       const traces= results.map(({id, data})=>{
       const s =sensors[id]
       return {
         name: s.label,
-        x: data.map(p => p.recorded_at),
-        y: data.map(p => p.avg),
+        x: data.map(p => p.recorded_at|| p.timestamp),
+        y: data.map(p => p[s.api]),
         type,
         mode,
         line: { color: s.color, width: 2 },
+        marker:{color: s.color, width: 2},
         hovertemplate: `<b>${s.label}</b>: %{y}<extra></extra>`
       };
     });
@@ -422,9 +524,12 @@
       paper_bgcolor: "transparent",
       plot_bgcolor: "transparent",
       hovermode: "x unified",
-      xaxis: { title: "Date" },
+      xaxis: { title: "Date",
+      ...(dateFrom && dateTo &&{range:[dateFrom, dateTo]}),
+      },
       yaxis: { title: "Value" }
     };
+    console.log("TRACES:", traces);
     Plotly.react("advancedGraph", traces, layout, {
     responsive: true,
     displaylogo: false,
@@ -434,11 +539,16 @@ async function loadSites() {
   const response   = await fetch(`${API}/sites`);
   const sites = await response.json();
   const select = document.getElementById("siteSelector");
+  const siteNames={
+    "site_upstream": "Site upstream",
+    "site_downstream": "Site downstream",
+    "site_resovoir": "Site resovoir"
+  }
 
   sites.forEach(id => {
     const opt= document.createElement("option");
     opt.value= id;
-    opt.textContent= id.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    opt.textContent= siteNames[id]
     select.appendChild(opt);
   });
   loadGraph(sites[0]);
