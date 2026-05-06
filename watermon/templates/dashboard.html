@@ -153,10 +153,11 @@
   <main class="dashboard" role="main">
     <header class="topbar">
       <div class="name">Water Quality Dashboard</div>
-      <select class="selecter">
-        <option value="">Home</option>
-        <option value="">Alert Log</option>
-        <option value="">Advanced Graphs</option>
+      <select class="selecter" onchange="if(this.value) window.location.href=this.value">
+        <option value="/">Home</option>
+        <option value="/alerts.html">Alert Log</option>
+        <option value="/trends.html">Advanced Graphs</option>
+        <option value="/export.html">Export</option>
       </select>
     </header>
     <div class="summary-strip" role="status" aria-live="polite">

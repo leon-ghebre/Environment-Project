@@ -6,36 +6,76 @@
   <title>Alert Log — Water Quality Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg-surface: #ffffff;
-      --border-subtle: rgba(0,0,0,0.10);
-      --border-default: rgba(0,0,0,0.18);
-      --radius-lg: 12px;
-      --radius-md: 8px;
-      --text-primary: #1a1a18;
-      --text-secondary: #5f5e5a;
-      --text-tertiary: #888780;
-      --font-mono: "DM Mono", monospace;
-      --font-exo-2: "Exo 2", sans-serif;
-      --critical: #c0392b;
-      --caution: #e67e22;
+      --bg-page:       #e6f3e8;
+      --bg-surface:    #ffffff;
+      --bg-surface2:   #f4f4f2;
+      --border:        rgba(0,0,0,0.10);
+      --border-mid:    rgba(0,0,0,0.18);
+      --text-1:        #1a1a18;
+      --text-2:        #5f5e5a;
+      --text-3:        #888780;
+      --accent:        darkblue;
+      --critical:      #c0392b;
+      --caution:       #e67e22;
+      --safe:          #27ae60;
+      --font-mono:     "DM Mono", monospace;
+      --font-body:     "Exo 2", sans-serif;
+      --radius-lg:     12px;
+      --radius-md:     8px;
+      --shadow:        0 1px 4px rgba(0,0,0,0.06);
+      --color-ph:        #1835FA;
+      --color-turbidity: #EF9F27;
+      --color-flow:      #1D9E75;
+      --color-level:     #9B59B6;
+    }
+    [data-theme="dark"] {
+      --bg-page:     #0d1a10;
+      --bg-surface:  #162019;
+      --bg-surface2: #1d2b20;
+      --border:      rgba(255,255,255,0.08);
+      --border-mid:  rgba(255,255,255,0.15);
+      --text-1:      #e8f0e9;
+      --text-2:      #9ab09c;
+      --text-3:      #607860;
+      --accent:      #5b9cf6;
+      --critical:    #e05c4b;
+      --caution:     #f0a444;
+      --safe:        #4cbb7a;
+      --shadow:      0 1px 6px rgba(0,0,0,0.4);
+    }
+    [data-theme="contrast"] {
+      --bg-page:     #000000;
+      --bg-surface:  #0a0a0a;
+      --bg-surface2: #111111;
+      --border:      rgba(255,255,255,0.35);
+      --border-mid:  rgba(255,255,255,0.6);
+      --text-1:      #ffffff;
+      --text-2:      #dddddd;
+      --text-3:      #aaaaaa;
+      --accent:      #ffff00;
+      --critical:    #ff4444;
+      --caution:     #ffaa00;
+      --safe:        #00ff88;
+      --shadow:      0 0 0 1px rgba(255,255,255,0.2);
     }
 
     body {
-      background-color: #e6f3e8;
+      background-color: var(--bg-page);
+      color: var(--text-1);
+      font-family: var(--font-body);
       display: flex;
       justify-content: center;
       align-items: flex-start;
       padding: 2rem 0;
       min-height: 100vh;
       margin: 0;
+      transition: background-color 0.25s, color 0.25s;
     }
-
     .dashboard {
       width: 100%;
       max-width: 1200px;
@@ -47,192 +87,132 @@
     }
 
     /* ── Topbar ── */
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .name { font-size: 25px; font-weight: 600; color: var(--accent); }
+    .date-strip { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 3px; }
+    .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
-    .name {
-      font-size: 25px;
-      font-weight: 600;
-      font-family: var(--font-exo-2);
-      color: darkblue;
-    }
+    /* ── Theme toggle ── */
+    .theme-toggle { display: flex; gap: 4px; background: var(--bg-surface); border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); padding: 3px; }
+    .theme-btn { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; padding: 4px 9px; border-radius: 5px; border: none; background: transparent; color: var(--text-3); cursor: pointer; transition: background 0.15s, color 0.15s; }
+    .theme-btn.active { background: var(--accent); color: var(--bg-page); }
+    [data-theme="contrast"] .theme-btn.active { color: #000; }
 
-    .selecter {
-      font-family: var(--font-exo-2);
-      font-size: 13px;
-      color: var(--text-primary);
-      background: var(--bg-surface);
-      border: 0.5px solid darkblue;
-      border-radius: var(--radius-md);
-      padding: 7px 30px 7px 14px;
-      cursor: pointer;
-    }
-
-    /* ── Date strip ── */
-    .date-strip {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-tertiary);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
+    .selecter { font-family: var(--font-body); font-size: 13px; color: var(--text-1); background: var(--bg-surface); border: 0.5px solid var(--accent); border-radius: var(--radius-md); padding: 7px 30px 7px 14px; cursor: pointer; }
 
     /* ── Summary strip ── */
-    .summary-strip {
-      display: flex;
-      gap: 2.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 0.5px solid var(--border-subtle);
-      flex-wrap: wrap;
-    }
+    .summary-strip { display: flex; gap: 2.5rem; padding-bottom: 1rem; border-bottom: 0.5px solid var(--border); flex-wrap: wrap; }
+    .summary-item label { display: block; font-size: 10px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-3); margin-bottom: 3px; }
+    .summary-item span { font-size: 15px; color: var(--text-1); }
 
-    .summary-item label {
-      display: block;
-      font-size: 10px;
-      font-family: var(--font-mono);
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: var(--text-tertiary);
-      margin-bottom: 3px;
-    }
+    /* ── Filter box ── */
+    .filter-box { background: var(--bg-surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1.25rem; box-shadow: var(--shadow); }
+    .filter-group { display: flex; flex-direction: column; gap: 8px; }
+    .filter-label { font-size: 10px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-3); }
+    .filter-selector,
+    .filter-date { font-family: var(--font-mono); font-size: 13px; color: var(--text-1); background: var(--bg-surface2); border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); padding: 7px 10px; width: 100%; cursor: pointer; appearance: none; }
+    .filter-group.sensors { grid-column: span 2; }
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .sensor-checkbox { position: relative; }
+    .sensor-checkbox label { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 100px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1.5px solid var(--border-mid); background: var(--bg-surface2); color: var(--text-3); transition: border-color 0.15s, background 0.15s, color 0.15s; }
+    .sensor-checkbox input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .sensor-checkbox input:checked + label { color: var(--text-1); }
+    .sensor-checkbox.ph         input:checked + label { border-color: var(--color-ph);        background: rgba(24,53,250,0.08); }
+    .sensor-checkbox.turbidity  input:checked + label { border-color: var(--color-turbidity); background: rgba(239,159,39,0.08); }
+    .sensor-checkbox.flow       input:checked + label { border-color: var(--color-flow);       background: rgba(29,158,117,0.08); }
+    .sensor-checkbox.level      input:checked + label { border-color: var(--color-level);      background: rgba(155,89,182,0.08); }
+    .swatch { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-    .summary-item span {
-      font-family: var(--font-exo-2);
-      font-size: 15px;
-      color: var(--text-primary);
-    }
-
-    /* ── Filter row ── */
-    .filter-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .section-title {
-      font-size: 13px;
-      font-weight: 500;
-      font-family: var(--font-exo-2);
-      color: var(--text-secondary);
-    }
-
-    /* ── Table card ── */
-    .table-card {
-      background: var(--bg-surface);
-      border: 0.5px solid var(--border-subtle);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-    }
-
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-family: var(--font-exo-2);
-      font-size: 13px;
-    }
-
-    .data-table thead tr {
-      border-bottom: 0.5px solid var(--border-subtle);
-    }
-
-    .data-table th {
-      padding: 12px 16px;
-      text-align: left;
-      font-size: 10px;
-      font-family: var(--font-mono);
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: var(--text-tertiary);
-      font-weight: 400;
-    }
-
-    .data-table td {
-      padding: 12px 16px;
-      color: var(--text-primary);
-      border-bottom: 0.5px solid var(--border-subtle);
-    }
-
-    .data-table tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    .data-table tbody tr:hover {
-      background: rgba(0,0,0,0.02);
-    }
-
-    .muted {
-      color: var(--text-tertiary);
-      font-style: italic;
-    }
-
-    .sev-high {
-      color: var(--critical);
-      font-weight: 600;
-    }
-
-    .sev-medium {
-      color: var(--caution);
-      font-weight: 600;
-    }
+    /* ── Table ── */
+    .table-card { background: var(--bg-surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table thead tr { border-bottom: 0.5px solid var(--border); }
+    .data-table th { padding: 12px 16px; text-align: left; font-size: 10px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-3); font-weight: 400; }
+    .data-table td { padding: 12px 16px; color: var(--text-1); border-bottom: 0.5px solid var(--border); }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover { background: var(--bg-surface2); }
+    .sensor-cell { display: flex; align-items: center; gap: 6px; }
+    .muted { color: var(--text-3); font-style: italic; }
+    .sev-high   { color: var(--critical); font-weight: 600; }
+    .sev-medium { color: var(--caution);  font-weight: 600; }
   </style>
 </head>
 <body>
   <main class="dashboard" role="main">
 
-    <!-- Topbar -->
     <header class="topbar">
       <div>
         <div class="name">Alert Log</div>
         <div class="date-strip" id="today-date">—</div>
       </div>
-      <select class="selecter" id="page-nav" onchange="navigatePage(this.value)">
-        <option value="dashboard.html">Home</option>
-        <option value="alerts.html" selected>Alert Log</option>
-        <option value="graphs.html">Advanced Graphs</option>
-      </select>
+      <div class="topbar-right">
+        <div class="theme-toggle" role="group" aria-label="Theme">
+          <button class="theme-btn" data-t="light"    onclick="setTheme('light')">LIGHT</button>
+          <button class="theme-btn" data-t="dark"     onclick="setTheme('dark')">DARK</button>
+          <button class="theme-btn" data-t="contrast" onclick="setTheme('contrast')">HC</button>
+        </div>
+        <select class="selecter" onchange="if(this.value) window.location.href=this.value">
+          <option value="/">Home</option>
+          <option value="/alerts.html" selected>Alert Log</option>
+          <option value="/trends.html">Advanced Graphs</option>
+          <option value="/export.html">Export</option>
+        </select>
+      </div>
     </header>
 
-    <!-- Summary strip -->
     <div class="summary-strip" role="status" aria-live="polite">
-      <div class="summary-item">
-        <label>Total alerts</label>
-        <span id="al-total">—</span>
-      </div>
-      <div class="summary-item">
-        <label>High severity</label>
-        <span id="al-high" style="color: var(--critical);">—</span>
-      </div>
-      <div class="summary-item">
-        <label>Medium severity</label>
-        <span id="al-medium" style="color: var(--caution);">—</span>
-      </div>
-      <div class="summary-item">
-        <label>Period</label>
-        <span id="al-period">Last 7 days</span>
-      </div>
+      <div class="summary-item"><label>Total alerts</label><span id="al-total">—</span></div>
+      <div class="summary-item"><label>High severity</label><span id="al-high" style="color:var(--critical)">—</span></div>
+      <div class="summary-item"><label>Medium severity</label><span id="al-medium" style="color:var(--caution)">—</span></div>
+      <div class="summary-item"><label>Period</label><span id="al-period">—</span></div>
     </div>
 
-    <!-- Filter row -->
-    
+    <section class="filter-box" aria-label="Alert filters">
+      <div class="filter-group">
+        <span class="filter-label">Site</span>
+        <select class="filter-selector" id="siteSelector" onchange="loadAlerts()">
+          <option value="">All Sites</option>
+          <option value="Upstream">Upstream</option>
+          <option value="Downstream">Downstream</option>
+          <option value="Reservoir">Reservoir</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">From</span>
+        <input class="filter-date" type="date" id="dateFrom" onchange="loadAlerts()" />
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">To</span>
+        <input class="filter-date" type="date" id="dateTo" onchange="loadAlerts()" />
+      </div>
+      <div class="filter-group sensors">
+        <span class="filter-label">Sensors</span>
+        <div class="checkbox-group">
+          <div class="sensor-checkbox ph">
+            <input type="checkbox" id="checkPh" value="ph" checked onchange="loadAlerts()" />
+            <label for="checkPh"><span class="swatch" style="background:var(--color-ph)"></span>pH</label>
+          </div>
+          <div class="sensor-checkbox turbidity">
+            <input type="checkbox" id="checkTurbidity" value="turbidity" checked onchange="loadAlerts()" />
+            <label for="checkTurbidity"><span class="swatch" style="background:var(--color-turbidity)"></span>Turbidity</label>
+          </div>
+          <div class="sensor-checkbox flow">
+            <input type="checkbox" id="checkFlow" value="flow" checked onchange="loadAlerts()" />
+            <label for="checkFlow"><span class="swatch" style="background:var(--color-flow)"></span>Flow</label>
+          </div>
+          <div class="sensor-checkbox level">
+            <input type="checkbox" id="checkLevel" value="level" checked onchange="loadAlerts()" />
+            <label for="checkLevel"><span class="swatch" style="background:var(--color-level)"></span>Water Level</label>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <!-- Table -->
     <section>
       <div class="table-card">
         <table class="data-table">
           <thead>
-            <tr>
-              <th>Site</th>
-              <th>Type</th>
-              <th>Time</th>
-              <th>Severity</th>
-            </tr>
+            <tr><th>Site</th><th>Sensor</th><th>Time</th><th>Severity</th></tr>
           </thead>
           <tbody id="al-list">
             <tr><td colspan="4" class="muted">Loading…</td></tr>
@@ -242,84 +222,109 @@
     </section>
 
   </main>
-
   <script>
-    // ── Date display ──
-    const dateEl = document.getElementById('today-date');
-    dateEl.textContent = new Date().toLocaleDateString('en-GB', {
+    const API = 'http://127.0.0.1:5000';
+
+    /* ── Theme ── */
+    function setTheme(t) {
+      document.documentElement.setAttribute('data-theme', t === 'light' ? '' : t);
+      localStorage.setItem('wq-theme', t);
+      document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.t === t));
+    }
+    (function () { setTheme(localStorage.getItem('wq-theme') || 'light'); })();
+
+    document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB', {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
 
-    // ── Navigation ──
-    function navigatePage(page) {
-      if (page) window.location.href = page;
-    }
+    /* ── Default: last 7 days ── */
+    (function () {
+      const to = new Date(), from = new Date();
+      from.setDate(from.getDate() - 7);
+      document.getElementById('dateTo').value   = to.toISOString().slice(0, 10);
+      document.getElementById('dateFrom').value = from.toISOString().slice(0, 10);
+    })();
 
-    // ── Metrics map ──
-    const METRICS = {
-      ph:         { icon: '🧪', label: 'pH' },
-      turbidity:  { icon: '💧', label: 'Turbidity' },
-      flow:       { icon: '🌊', label: 'Flow' },
-      waterlevel: { icon: '📏', label: 'Water Level' },
+    const SENSORS = {
+      ph:        { label: 'pH',          color: 'var(--color-ph)'        },
+      turbidity: { label: 'Turbidity',   color: 'var(--color-turbidity)' },
+      flow:      { label: 'Flow',        color: 'var(--color-flow)'       },
+      level:     { label: 'Water Level', color: 'var(--color-level)'      },
     };
+
+    function getActiveSensors() {
+      return Array.from(document.querySelectorAll('.sensor-checkbox input:checked')).map(cb => cb.value);
+    }
 
     function fmtDate(ts) {
       if (!ts) return '—';
       return new Date(ts).toLocaleString('en-GB', {
-        day: '2-digit', month: 'short', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
+        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
       });
     }
 
     function renderSummary(alerts) {
-      const high   = alerts.filter(a => a.severity === 'high').length;
-      const medium = alerts.filter(a => a.severity === 'medium' || a.severity === 'low').length;
       document.getElementById('al-total').textContent  = alerts.length;
-      document.getElementById('al-high').textContent   = high;
-      document.getElementById('al-medium').textContent = medium;
-      const days = document.getElementById('al-days').value;
-      document.getElementById('al-period').textContent = `Last ${days} days`;
+      document.getElementById('al-high').textContent   = alerts.filter(a => a.severity === 'high').length;
+      document.getElementById('al-medium').textContent = alerts.filter(a => a.severity !== 'high').length;
+      const from = document.getElementById('dateFrom').value;
+      const to   = document.getElementById('dateTo').value;
+      document.getElementById('al-period').textContent = `${from} → ${to}`;
     }
 
     function renderList(alerts) {
       const tbody = document.getElementById('al-list');
       if (!alerts.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="muted">No alerts found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="muted">No alerts match the current filters.</td></tr>';
         return;
       }
       tbody.innerHTML = alerts.map(a => {
-        const m = METRICS[a.metric] || { icon: '⚠️', label: a.metric };
-        const sevClass = a.severity === 'high' ? 'sev-high' : 'sev-medium';
-        return `
-          <tr>
-            <td>${a.site || '—'}</td>
-            <td>${m.icon} ${m.label}</td>
-            <td>${fmtDate(a.timestamp)}</td>
-            <td class="${sevClass}">${(a.severity || '').toUpperCase()}</td>
-          </tr>`;
+        const s   = SENSORS[a.metric] || { label: a.metric, color: 'var(--text-3)' };
+        const cls = a.severity === 'high' ? 'sev-high' : 'sev-medium';
+        return `<tr>
+          <td>${a.site || '—'}</td>
+          <td><span class="sensor-cell">
+            <span style="width:8px;height:8px;border-radius:50%;background:${s.color};display:inline-block;flex-shrink:0"></span>
+            ${s.label}
+          </span></td>
+          <td>${fmtDate(a.timestamp)}</td>
+          <td class="${cls}">${(a.severity || '').toUpperCase()}</td>
+        </tr>`;
       }).join('');
     }
 
     async function loadAlerts() {
-      const days = document.getElementById('al-days').value;
-      const site = window.currentSite || '';
-      const url  = `/api/alerts?site=${encodeURIComponent(site)}&days=${days}`;
+      const site   = document.getElementById('siteSelector').value;
+      const from   = document.getElementById('dateFrom').value;
+      const to     = document.getElementById('dateTo').value;
+      const active = getActiveSensors();
+
+      let alerts = [];
       try {
-        const res    = await fetch(url);
-        const alerts = await res.json();
-        renderSummary(alerts);
-        renderList(alerts);
+        const params = new URLSearchParams();
+        if (site) params.set('site', site);
+        if (from) params.set('from', from);
+        if (to)   params.set('to', to);
+        alerts = await fetch(`${API}/api/alerts?${params}`).then(r => r.json());
       } catch {
-        // Fallback demo data when API not available
-        const demo = [
-          { site: 'Site A', metric: 'ph',        timestamp: new Date().toISOString(), severity: 'high'   },
-          { site: 'Site B', metric: 'turbidity',  timestamp: new Date().toISOString(), severity: 'medium' },
-          { site: 'Site A', metric: 'flow',       timestamp: new Date().toISOString(), severity: 'high'   },
-          { site: 'Site C', metric: 'waterlevel', timestamp: new Date().toISOString(), severity: 'medium' },
-        ];
-        renderSummary(demo);
-        renderList(demo);
+        const sites = ['Upstream', 'Downstream', 'Reservoir'];
+        alerts = Array.from({ length: 16 }, (_, i) => ({
+          site:      sites[i % 3],
+          metric:    ['ph', 'turbidity', 'flow', 'level'][i % 4],
+          timestamp: new Date(Date.now() - i * 3600000 * 6).toISOString(),
+          severity:  i % 3 === 0 ? 'high' : 'medium',
+        }));
       }
+
+      if (from)   alerts = alerts.filter(a => a.timestamp >= from);
+      if (to)     alerts = alerts.filter(a => a.timestamp.slice(0, 10) <= to);
+      if (site)   alerts = alerts.filter(a => a.site === site);
+      if (active.length < Object.keys(SENSORS).length) {
+        alerts = alerts.filter(a => active.includes(a.metric));
+      }
+
+      renderSummary(alerts);
+      renderList(alerts);
     }
 
     document.addEventListener('DOMContentLoaded', loadAlerts);
