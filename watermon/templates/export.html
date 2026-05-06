@@ -1,15 +1,19 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <!-- Page metadata and title -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Export — Water Quality Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+  <!-- Global styles and theme definitions -->
   <style>
+    /* Reset default margins and padding */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* Light theme color variables */
     :root {
       --bg-page:     #e6f3e8;
       --bg-surface:  #ffffff;
@@ -29,6 +33,7 @@
       --radius-md:   8px;
       --shadow:      0 1px 4px rgba(0,0,0,0.06);
     }
+    /* Dark theme color overrides */
     [data-theme="dark"] {
       --bg-page:     #0d1a10;
       --bg-surface:  #162019;
@@ -44,6 +49,7 @@
       --safe:        #4cbb7a;
       --shadow:      0 1px 6px rgba(0,0,0,0.4);
     }
+    /* High contrast theme for accessibility */
     [data-theme="contrast"] {
       --bg-page:     #000000;
       --bg-surface:  #0a0a0a;
@@ -83,7 +89,7 @@
       gap: 1.25rem;
     }
 
-    /* ── Topbar ── */
+    /* Topbar: header with title and controls */
     .topbar {
       display: flex;
       align-items: center;
@@ -111,7 +117,7 @@
       flex-wrap: wrap;
     }
 
-    /* ── Theme toggle ── */
+    /* Theme toggle buttons (light/dark/contrast) */
     .theme-toggle {
       display: flex;
       gap: 4px;
@@ -149,7 +155,7 @@
       cursor: pointer;
     }
 
-    /* ── Summary strip ── */
+    /* Summary statistics display area */
     .summary-strip {
       display: flex;
       gap: 2.5rem;
@@ -171,7 +177,7 @@
       color: var(--text-1);
     }
 
-    /* ── Export layout ── */
+    /* Main export form and preview layout */
     .export-layout {
       display: grid;
       grid-template-columns: 280px 1fr;
@@ -180,7 +186,7 @@
     }
     @media (max-width: 700px) { .export-layout { grid-template-columns: 1fr; } }
 
-    /* ── Cards ── */
+    /* Card container for forms and preview */
     .card {
       background: var(--bg-surface);
       border: 0.5px solid var(--border);
@@ -197,7 +203,7 @@
       color: var(--text-2);
     }
 
-    /* ── Form ── */
+    /* Form input elements and labels */
     .form-group { display: flex; flex-direction: column; gap: 5px; }
     .form-group label {
       font-size: 10px;
@@ -223,7 +229,7 @@
     .date-input:focus { outline: none; border-color: var(--accent); }
     .date-sep { font-size: 10px; font-family: var(--font-mono); color: var(--text-3); flex-shrink: 0; }
 
-    /* ── Buttons ── */
+    /* Export and action buttons */
     .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
     .btn {
       font-family: var(--font-body);
@@ -244,7 +250,7 @@
       color: var(--accent);
     }
 
-    /* ── Preview ── */
+    /* Preview section header and metadata */
     .preview-header {
       display: flex;
       align-items: center;
@@ -255,7 +261,7 @@
     .btn-sm { font-size: 12px; padding: 5px 12px; }
     .ex-meta { font-size: 11px; font-family: var(--font-mono); color: var(--text-3); }
 
-    /* ── Table ── */
+    /* Data table with scrolling for small screens */
     .table-wrapper {
       overflow-x: auto;
       border-radius: var(--radius-md);
@@ -288,8 +294,8 @@
     .muted { color: var(--text-3); font-style: italic; font-size: 12px; }
   </style>
 
-  //define the page colour
-  <script src="{{ url_for('static', filename='theme.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}" />
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
   
 </head>
 <body>
@@ -315,6 +321,7 @@
       </div>
     </header>
 
+    <!-- Summary bar: shows currently selected site and period -->
     <div class="summary-strip">
       <div class="summary-item">
         <label>Site</label>
@@ -397,13 +404,14 @@
   </main>
 
   <script>
-    /* ── Theme ── */
+    // Theme management (handled in external theme.js)
     
-
+    // Display current date in page header
     document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB', {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
 
+    // Show/hide custom date range inputs
     function onDaysChange() {
       const val = document.getElementById('ex-days').value;
       document.getElementById('custom-date-group').style.display = val === 'custom' ? 'flex' : 'none';
@@ -416,6 +424,7 @@
       updateSummary();
     }
 
+    // Update summary display with current filter selections
     function updateSummary() {
       const site = document.getElementById('ex-site').value || 'All Sites';
       const days = document.getElementById('ex-days').value;
@@ -429,6 +438,7 @@
       }
     }
 
+    // Build query parameters for API requests
     function getParams() {
       const site = document.getElementById('ex-site').value;
       const days = document.getElementById('ex-days').value;
@@ -438,6 +448,7 @@
       return `site=${encodeURIComponent(site)}&days=${days}`;
     }
 
+    // Fetch and display preview data from API
     async function refreshPreview() {
       const tbody = document.getElementById('ex-tbody');
       const meta  = document.getElementById('ex-meta');
@@ -462,6 +473,7 @@
       }
     }
 
+    // Render data rows in preview table
     function renderPreview(rows, meta, tbody) {
       document.getElementById('sum-rows').textContent = rows.length;
       meta.textContent = `Showing ${rows.length} rows (preview only)`;
@@ -474,6 +486,7 @@
       </tr>`).join('');
     }
 
+    // Format timestamp to locale string
     function fmtDate(ts) {
       if (!ts) return '—';
       return new Date(ts).toLocaleString('en-GB', {
@@ -481,6 +494,7 @@
       });
     }
 
+    // Download exported data as CSV or JSON file
     async function doExport(fmt) {
       try {
         const res  = await fetch(`/api/export?${getParams()}&format=${fmt}`);
@@ -496,7 +510,9 @@
       } catch { alert('Export failed — check your connection.'); }
     }
 
+    // Initialize page: update summary and load preview data
     document.addEventListener('DOMContentLoaded', () => { updateSummary(); refreshPreview(); });
   </script>
 </body>
+</html>
 </html>

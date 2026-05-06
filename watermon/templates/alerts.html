@@ -1,15 +1,19 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <!-- Page metadata and title -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Alert Log — Water Quality Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+  <!-- Global styles and theme definitions -->
   <style>
+    /* Reset default margins and padding */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* Light theme color variables */
     :root {
       --bg-page:       #e6f3e8;
       --bg-surface:    #ffffff;
@@ -33,6 +37,7 @@
       --color-flow:      #1D9E75;
       --color-level:     #9B59B6;
     }
+    /* Dark theme color overrides */
     [data-theme="dark"] {
       --bg-page:     #0d1a10;
       --bg-surface:  #162019;
@@ -48,6 +53,7 @@
       --safe:        #4cbb7a;
       --shadow:      0 1px 6px rgba(0,0,0,0.4);
     }
+    /* High contrast theme for accessibility */
     [data-theme="contrast"] {
       --bg-page:     #000000;
       --bg-surface:  #0a0a0a;
@@ -86,13 +92,13 @@
       gap: 1.25rem;
     }
 
-    /* ── Topbar ── */
+    /* Topbar: header with title and controls */
     .topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
     .name { font-size: 25px; font-weight: 600; color: var(--accent); }
     .date-strip { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 3px; }
     .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
-    /* ── Theme toggle ── */
+    /* Theme toggle buttons (light/dark/contrast) */
     .theme-toggle { display: flex; gap: 4px; background: var(--bg-surface); border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); padding: 3px; }
     .theme-btn { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; padding: 4px 9px; border-radius: 5px; border: none; background: transparent; color: var(--text-3); cursor: pointer; transition: background 0.15s, color 0.15s; }
     .theme-btn.active { background: var(--accent); color: var(--bg-page); }
@@ -100,19 +106,19 @@
 
     .selecter { font-family: var(--font-body); font-size: 13px; color: var(--text-1); background: var(--bg-surface); border: 0.5px solid var(--accent); border-radius: var(--radius-md); padding: 7px 30px 7px 14px; cursor: pointer; }
 
-    /* ── Summary strip ── */
+    /* Summary statistics display area */
     .summary-strip { display: flex; gap: 2.5rem; padding-bottom: 1rem; border-bottom: 0.5px solid var(--border); flex-wrap: wrap; }
     .summary-item label { display: block; font-size: 10px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-3); margin-bottom: 3px; }
     .summary-item span { font-size: 15px; color: var(--text-1); }
 
-    /* ── Filter box ── */
+    /* Filter controls container */
     .filter-box { background: var(--bg-surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1.25rem; box-shadow: var(--shadow); }
     .filter-group { display: flex; flex-direction: column; gap: 8px; }
     .filter-label { font-size: 10px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-3); }
     .filter-selector,
     .filter-date { font-family: var(--font-mono); font-size: 13px; color: var(--text-1); background: var(--bg-surface2); border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); padding: 7px 10px; width: 100%; cursor: pointer; appearance: none; }
 
-    /* colour the severity options in the dropdown */
+    /* Color-code severity levels in dropdown */
     .filter-selector option[value="high"]   { color: var(--critical); }
     .filter-selector option[value="medium"] { color: var(--caution);  }
 
@@ -128,7 +134,7 @@
     .sensor-checkbox.level      input:checked + label { border-color: var(--color-level);      background: rgba(155,89,182,0.08); }
     .swatch { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-    /* ── Table ── */
+    /* Alert data table container */
     .table-card { background: var(--bg-surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); }
     .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
     .data-table thead tr { border-bottom: 0.5px solid var(--border); }
@@ -142,9 +148,8 @@
     .sev-medium { color: var(--caution);  font-weight: 600; }
   </style>
 
-  //define the page colour
-  <script src="{{ url_for('static', filename='theme.js') }}"></script>
-
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}" />
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 </head>
 <body>
   <main class="dashboard" role="main">
@@ -247,9 +252,10 @@
   </main>
 
   <script>
+    // API endpoint for backend alerts
     const API = 'http://127.0.0.1:5000';
 
-    /* ── Theme ── */
+    /* Theme management */
     
 
     document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB', {
@@ -264,6 +270,7 @@
       document.getElementById('dateFrom').value = from.toISOString().slice(0, 10);
     })();
 
+    // Sensor types with labels and colors
     const SENSORS = {
       ph:        { label: 'pH',          color: 'var(--color-ph)'        },
       turbidity: { label: 'Turbidity',   color: 'var(--color-turbidity)' },
@@ -271,10 +278,12 @@
       level:     { label: 'Water Level', color: 'var(--color-level)'      },
     };
 
+    // Get currently checked sensor filters
     function getActiveSensors() {
       return Array.from(document.querySelectorAll('.sensor-checkbox input:checked')).map(cb => cb.value);
     }
 
+    // Format timestamp to locale string
     function fmtDate(ts) {
       if (!ts) return '—';
       return new Date(ts).toLocaleString('en-GB', {
@@ -282,6 +291,7 @@
       });
     }
 
+    // Update summary statistics display
     function renderSummary(alerts) {
       document.getElementById('al-total').textContent  = alerts.length;
       document.getElementById('al-high').textContent   = alerts.filter(a => a.severity === 'high').length;
@@ -291,6 +301,7 @@
       document.getElementById('al-period').textContent = `${from} → ${to}`;
     }
 
+    // Render alert rows in table
     function renderList(alerts) {
       const tbody = document.getElementById('al-list');
       if (!alerts.length) {
@@ -312,6 +323,7 @@
       }).join('');
     }
 
+    // Fetch alerts from API and apply client-side filters
     async function loadAlerts() {
       const site     = document.getElementById('siteSelector').value;
       const severity = document.getElementById('severityFilter').value;
@@ -336,7 +348,7 @@
         }));
       }
 
-      /* ── Client-side filters ── */
+      /* Apply client-side filtering (date, site, severity, sensor) */
       if (from)     alerts = alerts.filter(a => a.timestamp >= from);
       if (to)       alerts = alerts.filter(a => a.timestamp.slice(0, 10) <= to);
       if (site)     alerts = alerts.filter(a => a.site === site);
