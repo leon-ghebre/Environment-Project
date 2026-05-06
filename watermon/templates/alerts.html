@@ -141,6 +141,10 @@
     .sev-high   { color: var(--critical); font-weight: 600; }
     .sev-medium { color: var(--caution);  font-weight: 600; }
   </style>
+
+  //define the page colour
+  <script src="{{ url_for('static', filename='theme.js') }}"></script>
+
 </head>
 <body>
   <main class="dashboard" role="main">
@@ -246,12 +250,7 @@
     const API = 'http://127.0.0.1:5000';
 
     /* ── Theme ── */
-    function setTheme(t) {
-      document.documentElement.setAttribute('data-theme', t === 'light' ? '' : t);
-      localStorage.setItem('wq-theme', t);
-      document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.t === t));
-    }
-    (function () { setTheme(localStorage.getItem('wq-theme') || 'light'); })();
+    
 
     document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB', {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
