@@ -270,5 +270,104 @@ def main():
         db.close()
 
 
+def import_rows(db, df_batch, site_ids: dict) -> None:
+    """Imports a batch of rows from a pandas DataFrame into the database.
+
+    Args:
+        db: Active SQLAlchemy database session.
+        df_batch: A pandas DataFrame containing a batch of water quality rows.
+        site_ids: Dictionary mapping site_code strings to integer database IDs.
+                  e.g. {"site_upstream": 1, "site_downstream": 2, "site_reservoir": 3}
+    """
+    for index, row in df_batch.iterrows():
+        site_id_value = site_ids.get(row["site_id"])
+        if site_id_value is None:
+            continue
+
+        existing_reading = (
+            db.query(WaterReading)
+            .filter(WaterReading.site_id == site_id_value)
+            .filter(WaterReading.recorded_at == row["timestamp"])
+            .first()
+        )
+        if existing_reading:
+            continue
+
+        ph_value = clean_number(row["ph"])
+        turbidity_value = clean_number(row["turbidity_ntu"])
+        conductivity_value = clean_number(row["conductivity_uS_cm"])
+        water_temp_value = clean_number(row["water_temperature_c"])
+        water_level_value = clean_number(row["water_level_cm"])
+        light_value = clean_number(row["light_lux"])
+        wx_temp_value = clean_number(row["wx_temp_c"])
+        wx_rh_value = clean_number(row["wx_rh_pct"])
+        wx_rain_value = clean_number(row["wx_rain_mm_hr"])
+
+        status_val, sensor_fault_val, fault_reason_val = validate_row(
+            ph_value,
+            turbidity_value,
+            conductivity_value,
+            water_temp_value,
+            water_level_value,
+            light_value,
+            wx_temp_value,
+            wx_rh_value,
+            wx_rain_value,
+            row["status"],
+        )
+
+        alert_fault_reasons = []
+        alert_triggered_value = check_alert_flag(
+            row["alert_triggered"], "alert_triggered", alert_fault_reasons
+        )
+        alert_ph_value = check_alert_flag(row["alert_ph"], "alert_ph", alert_fault_reasons)
+        alert_turbidity_value = check_alert_flag(
+            row["alert_turbidity"], "alert_turbidity", alert_fault_reasons
+        )
+        alert_turbidity_crit_value = check_alert_flag(
+            row["alert_turbidity_crit"], "alert_turbidity_crit", alert_fault_reasons
+        )
+        alert_conductivity_value = check_alert_flag(
+            row["alert_conductivity"], "alert_conductivity", alert_fault_reasons
+        )
+
+        if len(alert_fault_reasons) > 0:
+            sensor_fault_val = True
+            if fault_reason_val is None:
+                fault_reason_val = ", ".join(alert_fault_reasons)
+            else:
+                fault_reason_val += ", " + ", ".join(alert_fault_reasons)
+
+        reading = WaterReading(
+            site_id=site_id_value,
+            recorded_at=row["timestamp"],
+            ph=ph_value,
+            turbidity_ntu=turbidity_value,
+            conductivity_uS_cm=conductivity_value,
+            water_temperature_c=water_temp_value,
+            water_level_cm=water_level_value,
+            light_lux=light_value,
+            status=status_val,
+            alert_triggered=alert_triggered_value,
+            alert_ph=alert_ph_value,
+            alert_turbidity=alert_turbidity_value,
+            alert_turbidity_crit=alert_turbidity_crit_value,
+            alert_conductivity=alert_conductivity_value,
+            wx_temp_c=wx_temp_value,
+            wx_rh_pct=wx_rh_value,
+            wx_rain_mm_hr=wx_rain_value,
+            sensor_fault=sensor_fault_val,
+            fault_reason=fault_reason_val,
+        )
+
+        db.add(reading)
+        db.flush()
+
+        if reading.alert_triggered or reading.sensor_fault:
+            create_alert_events_for_reading(db, reading)
+
+    db.commit()
+
+
 if __name__ == "__main__":
     main()
