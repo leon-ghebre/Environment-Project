@@ -106,5 +106,12 @@
       } catch { alert('Export failed — check your connection.'); }
     }
 
+    /* Expose functions called from HTML onclick/onchange to window scope,
+       because type="module" scripts have their own scope and are not global */
+    window.onDaysChange    = onDaysChange;
+    window.updateSummary   = updateSummary;
+    window.refreshPreview  = refreshPreview;
+    window.doExport        = doExport;
+
     // Initialize page: update summary and load preview data
     document.addEventListener('DOMContentLoaded', () => { updateSummary(); refreshPreview(); });

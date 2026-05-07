@@ -11,5 +11,9 @@ function setTheme(t) {
   document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.t === t));
 }
 
+/* Expose globally so onclick="setTheme(...)" works on all pages,
+   including pages that load other scripts as type="module" */
+window.setTheme = setTheme;
+
 /* Apply saved theme immediately on page load to avoid flash */
 (function () { setTheme(localStorage.getItem('wq-theme') || 'light'); })();

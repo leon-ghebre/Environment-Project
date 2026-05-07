@@ -35,14 +35,22 @@
 
     
     body{
-      background-color: #e6f3e8;
+      background-color: var(--bg-page, #e6f3e8);
+      color: var(--text-1, #1a1a18);
       display: flex;
       justify-content: center;
       align-items: flex-start;
       padding: 2rem 0;
       min-height: 100vh;
       margin: 0;
+      transition: background-color 0.25s, color 0.25s;
     }
+    /* Theme toggle */
+    .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .theme-toggle { display: flex; gap: 4px; background: var(--bg-surface, #fff); border: 0.5px solid rgba(0,0,0,0.18); border-radius: var(--radius-md); padding: 3px; }
+    .theme-btn { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; padding: 4px 9px; border-radius: 5px; border: none; background: transparent; color: var(--text-tertiary, #888780); cursor: pointer; transition: background 0.15s, color 0.15s; }
+    .theme-btn.active { background: var(--accent, darkblue); color: var(--bg-page, #e6f3e8); }
+    [data-theme="contrast"] .theme-btn.active { color: #000; }
     main.container {
       max-width: 420px;
     }
@@ -181,12 +189,19 @@
   <main class="dashboard" role="main">
     <header class="topbar">
       <div class="name">Water Quality Dashboard</div>
-      <select class="selecter" id="pageSelect">
-        <option value="pages/index.html" selected>Dashboard</option>
-        <option value="pages/alerts.html">Alert Log</option>
-        <option value="pages/advanced-graphs.html">Advanced Graphs</option>
-        <option value="pages/export.html" selected>Export</option>
-      </select>
+      <div class="topbar-right">
+        <div class="theme-toggle" role="group" aria-label="Theme">
+          <button class="theme-btn" data-t="light"    onclick="setTheme('light')">LIGHT</button>
+          <button class="theme-btn" data-t="dark"     onclick="setTheme('dark')">DARK</button>
+          <button class="theme-btn" data-t="contrast" onclick="setTheme('contrast')">HC</button>
+        </div>
+        <select class="selecter" id="pageSelect">
+          <option value="pages/index.html" selected>Dashboard</option>
+          <option value="pages/alerts.html">Alert Log</option>
+          <option value="pages/advanced-graphs.html">Advanced Graphs</option>
+          <option value="pages/export.html">Export</option>
+        </select>
+      </div>
     </header>
     <div class="summary-strip" role="status" aria-live="polite">
       <div class="summary-item">
@@ -245,4 +260,3 @@
       </section>
     </main>
 <script type="module" src="/assets/static/js/index.js"></script>
-  

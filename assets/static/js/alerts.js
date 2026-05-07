@@ -107,4 +107,8 @@
       renderList(alerts);
     }
 
+    /* Expose functions called from HTML onclick/onchange to window scope,
+       because type="module" scripts have their own scope and are not global */
+    window.loadAlerts = loadAlerts;
+
     document.addEventListener('DOMContentLoaded', loadAlerts);
