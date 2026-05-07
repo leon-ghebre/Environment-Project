@@ -1,0 +1,56 @@
+/* ── Shared theme variables across all pages ── */
+
+/* Light mode (default) */
+:root {
+  --bg-page:     #e6f3e8;
+  --bg-surface:  #ffffff;
+  --bg-surface2: #f4f4f2;
+  --border:      rgba(0,0,0,0.10);
+  --border-mid:  rgba(0,0,0,0.18);
+  --text-1:      #1a1a18;
+  --text-2:      #5f5e5a;
+  --text-3:      #888780;
+  --accent:      darkblue;
+  --critical:    #c0392b;
+  --caution:     #e67e22;
+  --safe:        #27ae60;
+  --font-mono:   "DM Mono", monospace;
+  --font-body:   "Exo 2", sans-serif;
+  --radius-lg:   12px;
+  --radius-md:   8px;
+  --shadow:      0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* Dark mode */
+[data-theme="dark"] {
+  --bg-page:     #0d1a10;
+  --bg-surface:  #162019;
+  --bg-surface2: #1d2b20;
+  --border:      rgba(255,255,255,0.08);
+  --border-mid:  rgba(255,255,255,0.15);
+  --text-1:      #e8f0e9;
+  --text-2:      #9ab09c;
+  --text-3:      #607860;
+  --accent:      #5b9cf6;
+  --critical:    #e05c4b;
+  --caution:     #f0a444;
+  --safe:        #4cbb7a;
+  --shadow:      0 1px 6px rgba(0,0,0,0.4);
+}
+
+/* High contrast mode */
+[data-theme="contrast"] {
+  --bg-page:     #000000;
+  --bg-surface:  #0a0a0a;
+  --bg-surface2: #111111;
+  --border:      rgba(255,255,255,0.35);
+  --border-mid:  rgba(255,255,255,0.6);
+  --text-1:      #ffffff;
+  --text-2:      #dddddd;
+  --text-3:      #aaaaaa;
+  --accent:      #ffff00;
+  --critical:    #ff4444;
+  --caution:     #ffaa00;
+  --safe:        #00ff88;
+  --shadow:      0 0 0 1px rgba(255,255,255,0.2);
+}

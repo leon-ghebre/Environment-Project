@@ -1,0 +1,375 @@
+
+<!--advanced-graphs.html is the page for 'specialists' for analysing and comparing more advanced info and trends-->
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Water Quality Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    *, *::before, *::after {box-sizing: border-box; margin: 0 ; padding: 0;}
+    :root{
+        --bg-surface: #ffffff;
+        --bg-page:    #f4f4f2;
+        --border-subtle: rgba(0,0,0,0.10);        
+        --border-default: rgba(0,0,0,0.18);
+        --radius-lg: 12px;         
+        --radius-md: 8px;
+        --text-primary: #1a1a18;
+        --text-secondary: #5f5e5a;
+        --text-tertiary: #888780;
+        --font-mono:"DM Mono", monospace;
+        --font-exo-2: "Exo 2", sans-serif;
+        --color-ph: #1835FA;
+        --color-turbidity: #f57d1b;
+        --color-level: #9B59B6;
+        --color-conductivity: #6bff15;
+        --color-temp: #1D9E75;
+        --color-wxTemp: #ff0000;
+        --color-wxRh: #35fafa;
+        --color-wxRain: #f31bc4;
+        --color-light: #edf10f;
+
+
+    }
+    body{
+      background-color: #e6f3e8;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem 0;
+      min-height: 100vh;
+      margin: 0;
+    }
+    main.container {
+      max-width: 420px;
+    }
+    .dashboard{
+      width: 100%;
+      max-width: 1200px;
+      padding: 0 1rem;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .topbar{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .name{
+      font-size: 25px;
+      font-weight: 600;
+      font-family: var(--font-exo-2);
+      color: darkblue;
+    }
+    .selecter{
+      font-family: var(--font-exo-2);
+      font-size: 13px;
+      color: var(--text-primary);
+      background: var(--bg-surface);
+      border: 0.5px solid darkblue;
+      border-radius: var(--radius-md);
+      padding: 7px 30px 7px 14px;
+    }
+    .summary-strip{
+      display: flex;
+      gap: 2.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 0.5px solid var(--border-subtle);
+      flex-wrap: wrap;
+    }
+    .summary-item label{
+      display: block;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-tertiary);
+      margin-bottom: 3px;
+    }
+    .filter-box{
+      background: var(--bg-surface);
+      border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1.25rem;
+    }
+    .filter-group{
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .filter-label{
+      font-size: 10px;
+      color: var(--text-tertiary);
+    }
+    .filter-selector,
+    .filter-date{
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-primary);
+      background: var(--bg-page);
+      border: 0.5px solid var(--border-default);
+      border-radius: var(--radius-md);
+      padding: 7px 10px;
+      width: 100%;
+      cursor: pointer;
+      appearance: none;
+      
+    }
+    .filter-group.sensors{
+      grid-column: span 2;
+    }
+    .checkbox-group{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      align-items: center;
+    }
+    .sensor-checkbox{
+      position: relative;
+    }
+    .sensor-checkbox label {
+      width: 100%;
+      justify-content: flex-start;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: opacity 0.15s, border-color 0.15s;
+      
+      background: var(--bg-page);
+      color: var(--text-tertiary);
+      border-color: var(--border-default);
+    }
+    
+      /*used ai to help with the checkbox toggle specifically the colouring*/
+    .sensor-checkbox input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .sensor-checkbox.ph input:checked + label { border-color: var(--color-ph); background: rgba(24,95,165,0.08);  }
+    .sensor-checkbox.turbidity input:checked + label { border-color: var(--color-turbidity); background: rgba(239,159,39,0.08); }
+    .sensor-checkbox.level input:checked + label { border-color: var(--color-level); background: rgba(155,89,182,0.08); }
+    .sensor-checkbox.temperature input:checked + label { border-color: var(--color-temp); background: rgba(29,158,117,0.08);  }
+    .sensor-checkbox.conductivity input:checked + label { border-color: var(--color-conductivity); background: rgba(107, 255, 21, 0.08); }
+    .sensor-checkbox.wxRain input:checked + label { border-color: var(--color-wxRain); background: rgba(243, 27, 196, 0.08);  }
+    .sensor-checkbox.wxRh input:checked + label { border-color: var(--color-wxRh); background: rgba(53, 250, 250, 0.08);  }
+    .sensor-checkbox.wxTemp input:checked + label { border-color: var(--color-wxTemp); background: rgba(255, 0, 0, 0.08);  }
+    .sensor-checkbox.light input:checked + label { border-color: var(--color-light); background: rgba(241, 196, 15, 0.10);  }
+    .sensor-checkbox label .swatch {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .sensor-checkbox input:checked + label{
+      color: var(--text-primary);
+      opacity: 1;
+    }
+    .trend-graph{
+      background: var(--bg-surface);
+      border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+    }
+    .trend-header{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .trend-title{
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .trend-wrap{
+      position: relative;
+      height: 380px;
+    }
+    .trend-placeholder{
+      height: 380px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0.5px dashed var(--border-default);
+      border-radius: var(--radius-md);
+      color: var(--text-tertiary);
+      font-size: 13px;
+    }
+    #advancedGraph {
+      width: 100%;
+      height: 380px;
+}
+
+  </style>
+
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/theme.css')}}"/>
+  <script src="{{ url_for('static',filename='js/theme.js' )}}"></script>
+
+</head>
+<body>  
+  <main class="dashboard" role="main">
+
+    <header class="topbar">
+      <div class="name">Water Quality Dashboard</div>
+      <select class="selecter" id="pageSelect">
+        <option value="/">Dashboard</option>
+        <option value="/alerts.html">Alert Log</option>
+        <option value="/advanced-graphs.html" selected>Advanced Graphs</option>
+        <option value="/export.html">Export</option>
+      </select>
+    </header>
+
+    <div class="summary-strip" role="status" aria-live="polite">
+      <div class="summary-item">
+        <label>Last sample:</label>
+        <span id="lastSample">-</span>
+      </div>
+
+      <div class="summary-item">
+        <label>Total alerts today:</label> 
+        <span class="alert" id="alertCount">-</span>
+      </div>
+
+      <div class="summary-item">
+        <label>Sites Monitored:</label>
+        <span id="siteCount">-</span>
+      </div>
+
+    </div>
+    <section class="filter-box" aria-label="Graph controls">
+      <div class="filter-group">
+        <span class="filter-label">site</span>
+        <select class="filter-selector" id="siteSelector" aria-label="Select site"></select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Graph type</span>
+        <select class="filter-selector" id="graphType" aria-label="Select graph type">
+          <option value="line">Line</option>
+          <option value="bar">Bar</option>
+          <option value="scatter">Scatter</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">From</span>
+        <input class="filter-date" type="date" id="dateFrom" aria-label="Start date">
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">To</span>
+        <input class="filter-date" type="date" id="dateTo" aria-label="End date">
+      </div>
+      <div class="filter-group sensors">
+        <span class="filter-label">Sensors</span>
+        <div class="checkbox-group" role="group" aria-label="Select sensors">
+
+        <div class="sensor-checkbox ph">
+          <input type="checkbox" id="checkPh" value="ph" checked>
+          <label for="checkPh">
+            <span class="swatch" style="background: var(--color-ph)">
+            </span>
+            pH
+            </label>
+        </div>
+
+        <div class="sensor-checkbox turbidity">
+          <input type="checkbox" id="checkTurbidity" value="turbidity" checked>
+          <label for="checkTurbidity">
+            <span class="swatch" style="background: var(--color-turbidity)"></span>
+            Turbidity
+          </label>
+        </div>
+
+        <div class="sensor-checkbox level">
+          <input type="checkbox" id="checkLevel" value="level" checked>
+          <label for="checkLevel">
+            <span class="swatch" style="background: var(--color-level)"></span>
+            Water level
+          </label>
+        </div>
+         <div class="sensor-checkbox temperature">
+          <input type="checkbox" id="checkTemperature" value="temperature" checked>
+          <label for="checkTemperature">
+            <span class="swatch" style="background: var(--color-temp)"></span>
+            Water temperature
+            </label>
+        </div>
+         <div class="sensor-checkbox conductivity">
+          <input type="checkbox" id="checkConductivity" value="conductivity" checked>
+          <label for="checkConductivity">
+            <span class="swatch" style="background: var(--color-conductivity)"></span>
+            Conductivity
+            </label>
+        </div>
+
+         <div class="sensor-checkbox wxTemp">
+          <input type="checkbox" id="checkWxtemp" value="wxTemp" checked>
+          <label for="checkWxtemp">
+            <span class="swatch" style="background: var(--color-wxTemp)"></span>
+            Air temperature
+            </label>
+        </div>
+
+         <div class="sensor-checkbox wxRh">
+          <input type="checkbox" id="checkWxrh" value="wxRh" checked>
+          <label for="checkWxrh">
+            <span class="swatch" style="background: var(--color-wxRh)"></span>
+            Humidity
+            </label>
+        </div>
+
+         <div class="sensor-checkbox wxRain">
+          <input type="checkbox" id="checkWxrain" value="wxRain" checked>
+          <label for="checkWxrain">
+            <span class="swatch" style="background: var(--color-wxRain)"></span>
+            Rainfall
+            </label>
+        </div>
+
+         <div class="sensor-checkbox light">
+          <input type="checkbox" id="checkLight" value="light" checked>
+          <label for="checkLight">
+            <span class="swatch" style="background: var(--color-light)"></span>
+            Light level
+            </label>
+        </div>
+      
+      </div>
+      </div>
+    
+    </section>
+    <section class="trend-graph">
+        <div class="trend-header">
+          <span class="trend-title">Trend Analysis</span>
+        </div>
+        <div class="trend-placeholder" id="trendPlaceholder">Awaiting data</div>
+        <div class="trend-wrap" id="trendWrap" style="display: none;">
+          <div id="advancedGraph" aria-label="Advanced trend graph"></div>
+        </div>
+      </section>
+</main>
+<script type="module" src="/static/js/advanced-graphs.js"></script>
+
+
