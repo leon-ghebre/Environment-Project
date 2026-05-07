@@ -57,7 +57,7 @@ def timeseries():
 
 @app.route("/sites")
 def sites():
-    return jsonify(["site_upstream", "site_downstream", "site_resovoir"])
+    return jsonify(["site_upstream", "site_downstream", "site_reservoir"])
 
 
 if __name__ == "__main__":

@@ -1,3 +1,6 @@
+
+<!--advanced-graphs.html is the page for 'specialists' for analysing and comparing more advanced info and trends-->
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -156,6 +159,8 @@
       color: var(--text-tertiary);
       border-color: var(--border-default);
     }
+    
+      /*used ai to help with the checkbox toggle specifically the colouring*/
     .sensor-checkbox input {
       position: absolute;
       opacity: 0;
@@ -245,7 +250,7 @@
       </div>
 
       <div class="summary-item">
-        <label>Sites Monitered:</label>
+        <label>Sites Monitored:</label>
         <span id="siteCount">-</span>
       </div>
 
@@ -356,27 +361,23 @@
         </div>
         <div class="trend-placeholder" id="trendPlaceholder">Awaiting data</div>
         <div class="trend-wrap" id="trendWrap" style="display: none;">
-          <div id="advancedGraph" aria-label="Advanced trend graph for pH, water level, turbidity and flow rate"></div>
+          <div id="advancedGraph" aria-label="Advanced trend graph"></div>
         </div>
       </section>
 </main>
 <script>
     const API = "https://zany-space-goldfish-pjpg4jp75v4q379qp-5000.app.github.dev/";
+    //function for the page selector
     document.getElementById("pageSelect").addEventListener("change", function(){
       const selectedPage=this.value;
       window.location.href=selectedPage;
       })
+      //returns a list of values from the checked sensors
     function getSelectedSensors(){
       const checkboxes = document.querySelectorAll(".sensor-checkbox input:checked")
       return Array.from(checkboxes).map(cb => cb.value);
     }
     
-    document.querySelectorAll(".sensor-checkbox input").forEach(cb=>{
-      cb.addEventListener("change", ()=>{
-        const site = document.getElementById("siteSelector").value;
-        loadGraph(site);
-      });
-    });
       
     const sensors= {
       ph:{
@@ -463,8 +464,13 @@
       activeSensors:["ph","turbidity","level","conductivity", "wxTemp", "wxRh", "wxRain","light","temperature" ],
       data:"null",
 
-    }
+    } 
+    /*calls getSelectedSensors to get metrics for selected sensors,
+    then builds graph with selected graph and date range and sends one api call per sensor.
+    if no data is available/ checked it will display this
+    */
     async function loadGraph(siteId) {
+      try{
       const active = getSelectedSensors();
       if (active.length===0){
         document.getElementById("trendWrap").style.display = "none";
@@ -496,36 +502,44 @@
         return fetch(`${API}/timeseries?${parametres}`)
           .then(res => res.json())
           .then(data =>{
-            console.log("RAW RESPONSE:", id, data);
             if (!Array.isArray(data)) {
-              console.error("BAD RESPONSE for", id, data);
+              console.error("BAD RESPONSE for", id, data); // used ai for help with console error detection 
               return { id, data: [] };
             }
             return{id, data};
           
           });
-      }));
+        }));
+        const hasData = results.some(({data}) => data.length > 0);
+        if (!hasData) {
+          document.getElementById('trendPlaceholder').textContent = 'No data available for this selection';
+          document.getElementById('trendPlaceholder').style.display = 'flex';
+          document.getElementById('trendWrap').style.display = 'none';
+          return;
+}
     
       const traces= results.map(({id, data})=>{
-      const s =sensors[id]
-      return {
-        name: s.label,
-        x: data.map(p => p.recorded_at|| p.timestamp),
-        y: data.map(p => p[s.api]),
-        type,
-        mode,
-        line: { color: s.color, width: 2 },
-        marker:{color: s.color, width: 2},
-        hovertemplate: `<b>${s.label}</b>: %{y}<extra></extra>`
-      };
-    });
+        const s =sensors[id]
+        return {
+          name: s.label,
+         x: data.map(p => p.recorded_at|| p.timestamp),
+         y: data.map(p => p[s.api]),
+          type,
+          mode,
+          line: { color: s.color, width: 2 },//used ai for these next couple of lines
+          marker:{color: s.color, width: 2},
+          hovertemplate: `<b>${s.label}</b>: %{y}<extra></extra>`
+        };
+      });
+  
+
     const layout ={
       margin: { t: 20, r: 10, b: 40, l: 40 },
       paper_bgcolor: "transparent",
       plot_bgcolor: "transparent",
       hovermode: "x unified",
       xaxis: { title: "Date",
-      ...(dateFrom && dateTo &&{range:[dateFrom, dateTo]}),
+      ...(dateFrom && dateTo &&{range:[dateFrom, dateTo]}), //used ai for this line to fix a bug with the date filter
       },
       yaxis: { title: "Value" }
     };
@@ -534,24 +548,45 @@
     responsive: true,
     displaylogo: false,
     });
-}
-async function loadSites() {
-  const response   = await fetch(`${API}/sites`);
-  const sites = await response.json();
-  const select = document.getElementById("siteSelector");
-  const siteNames={
-    "site_upstream": "Site upstream",
-    "site_downstream": "Site downstream",
-    "site_resovoir": "Site resovoir"
+  }catch(error){
+    console.error('Failed to load graph:', error);
+    document.getElementById('trendPlaceholder').textContent = 'Failed to load data';
+    document.getElementById('trendPlaceholder').style.display = 'flex';
+    document.getElementById('trendWrap').style.display = 'none';
   }
+}
 
-  sites.forEach(id => {
-    const opt= document.createElement("option");
-    opt.value= id;
-    opt.textContent= siteNames[id]
-    select.appendChild(opt);
-  });
-  loadGraph(sites[0]);
+  
+  
+/*fetches the available sites and puts them in the dropdown-
+ maps them to readable names and calls load graph with the first site*/
+async function loadSites() {
+  try{
+    const response   = await fetch(`${API}/sites`);
+    const sites = await response.json();
+    const select = document.getElementById("siteSelector");
+    const siteNames={
+      "site_upstream": "Site upstream",
+      "site_downstream": "Site downstream",
+      "site_reservoir": "Site reservoir"
+    }
+    if (!sites.length){
+      console.error("no sites found")
+      return;
+    }
+
+    sites.forEach(id => {
+      const opt= document.createElement("option");
+      opt.value= id;
+      opt.textContent= siteNames[id]
+      select.appendChild(opt);
+    });
+    loadGraph(sites[0]);
+  }catch(error){
+    console.error("failed to load sites")
+    document.getElementById("trendPlaceholder").textContent="Failed to load sites"
+  }
+     
 }
   
 window.addEventListener("DOMContentLoaded",loadSites);

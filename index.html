@@ -1,4 +1,5 @@
 <!--python3 -m http.server 8000-->
+<!--index.html- main dashboard home page- main job is for it to be easily readable for regualr non spesialised people-->
 
 <!doctype html>
 <html lang="en">
@@ -190,7 +191,7 @@
         <span class="alert" id="alertCount">-</span>
       </div>
       <div class="summary-item">
-        <label>Sites Monitered:</label>
+        <label>Sites Monitored:</label>
         <span id="siteCount">-</span>
       </div>
     </div>
@@ -198,28 +199,28 @@
         <div class="data-square" id="ph-square">
           <div class="data-label">PH</div>
           <div class="data-value" id="val-ph"></div>
-          <div class="data-units" >ph units</div>
+          <div class="data-units" >SAFE RANGE:6.5 - 8.5</div>
           <span class="status-pill" id="pill-ph"></span>
         </div>
         
         <div class="data-square" id="waterlevel-square">
-          <div class="data-label">WATER LEVEL</div>
+          <div class="data-label">WATER LEVEL(cm)</div>
           <div class="data-value" id="val-waterlevel"></div>
-          <div class="data-units" >cm</div>
+          <div class="data-units" ></div>
           <span class="status-pill" id="pill-waterlevel"></span>
         </div>
 
         <div class="data-square" id="turbidity-square">
-          <div class="data-label">TURBIDITY</div>
+          <div class="data-label">TURBIDITY(NTU)</div>
           <div class="data-value" id="val-turbidity"></div>
-          <div class="data-units" >NTU</div>
+          <div class="data-units" >SAFE RANGE:0.0 - 4.0</div>
           <span class="status-pill" id="pill-turbidity"></span>
         </div>
 
         <div class="data-square" id="temperature-square">
-          <div class="data-label">WATER TEMPERATURE</div>
+          <div class="data-label">WATER TEMPERATURE(°C)</div>
           <div class="data-value" id="val-temperature"></div>
-          <div class="data-units" >°C</div>
+          <div class="data-units" ></div>
           <span class="status-pill" id="pill-temperature"></span>
         </div>
 
@@ -232,7 +233,7 @@
         </div>
         <div class="trend-placeholder" id="trendPlaceholder">Awaiting data</div>
         <div class="trend-wrap" id="trendWrap" style="display: none;">
-          <div id="trendGraph" aria-label="Trend graph for pH, water level, turbidity and flow rate"></div>
+          <div id="trendGraph" aria-label="Trend graph for pH, water level, turbidity and water temperature"></div>
         </div>
       </section>
     </main>
@@ -243,8 +244,9 @@
     const selectedPage=this.value;
     window.location.href=selectedPage;
   });
-  let trendGraph = null;
-  
+
+  //renderGraph() takes in arrays of data and draws a graph using plotly
+
   function renderGraph(labels, ph, turbidity_ntu, water_temperature_c, water_level_cm) {
     document.getElementById('trendPlaceholder').style.display = 'none';
     document.getElementById('trendWrap').style.display = 'block';
@@ -256,7 +258,7 @@
           y: ph,
           type: 'scatter',
           mode: 'lines',
-          line: { color: '#185FA5', width: 2 }
+          line: {color: '#185FA5', width: 2}
         },
         {
           name: 'Turbidity',
@@ -264,7 +266,7 @@
           y: turbidity_ntu,
           type: 'scatter',
           mode: 'lines',
-          line: { color: '#EF9F27', width: 2 }
+          line: {color: '#EF9F27', width: 2}
         },
         {
           name: 'Water temperature',
@@ -272,7 +274,7 @@
           y: water_temperature_c,
           type: 'scatter',
           mode: 'lines',
-          line: { color: '#1D9E75', width: 2 },
+          line: {color: '#1D9E75', width: 2},
         },
          {
           name: 'Water Level',
@@ -280,35 +282,40 @@
           y: water_level_cm,
           type: 'scatter',
           mode: 'lines',
-          line: { color: '#9B59B6', width: 2 }
+          line: {color: '#9B59B6', width: 2}
          },
       ];
         
         const layout ={
-          margin: { t: 10, r: 10, b: 30, l: 30 },
+          margin: {t: 10, r: 10, b: 30, l: 30},
           paper_bgcolor: "transparent",
           plot_bgcolor: "transparent",
           hovermode: "x unified",
-          xaxis: { title: "Date" },
-          yaxis: { title: "Value" },
+          xaxis: {title: "Date"},
+          yaxis: {title: "Value"},
         };
-        Plotly.react("trendGraph", traces, layout, {
+        Plotly.react("trendGraph", traces, layout, { //used ai here to help the problem of having to destroy the graph every time
           responsive: true,
           displaylogo: false,
         });
   }
     
-
+//loadLiveData() sends 4 api calls to get timeseries data for each sensor, then obtain the last item(most recent)
+//displays the readings on metric cards and calls renderGraph() so that it updates with new data
   async function loadLiveData() {
     try {
       const siteId="all"
-    
-      const [phData, turbidityData, levelData, temperatureData] = await Promise.all([
+    //ai was used for promise.all so that all metrics appear at the same time
+      const [phData, turbidityData, levelData, temperatureData] = await Promise.all([ 
         fetch(`${API}/timeseries?site_code=${siteId}&metric=ph&freq=D`).then(r => r.json()),
         fetch(`${API}/timeseries?site_code=${siteId}&metric=turbidity_ntu&freq=D`).then(r => r.json()),
         fetch(`${API}/timeseries?site_code=${siteId}&metric=water_level_cm&freq=D`).then(r => r.json()),
         fetch(`${API}/timeseries?site_code=${siteId}&metric=water_temperature_c&freq=D`).then(r => r.json()),
       ]);
+      if (!phData.length || !turbidityData.length || !levelData.length || !temperatureData.length) {
+        console.error('One or more sensors returned no data');
+      return;
+}
 
       const latestPh = phData[phData.length - 1];
       const latestLevel = levelData[levelData.length - 1];
@@ -331,6 +338,9 @@
 
     } catch (error) {
       console.error('Error loading live data:', error);
+      document.getElementById('trendPlaceholder').textContent = 'Failed to load data, retrying...';
+      document.getElementById('trendPlaceholder').style.display = 'flex';
+      document.getElementById('trendWrap').style.display = 'none';
     }
   }
 
