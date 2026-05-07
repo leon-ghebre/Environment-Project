@@ -85,13 +85,10 @@
         if (to)       {params.set('to', to);}
         alerts = await getJSON(`/api/alerts?${params}`);
       } catch {
-        const sites = ['Upstream', 'Downstream', 'Reservoir'];
-        alerts = Array.from({ length: 16 }, (_, i) => ({
-          site:      sites[i % 3],
-          metric:    ['ph', 'turbidity', 'flow', 'level'][i % 4],
-          timestamp: new Date(Date.now() - i * 3600000 * 6).toISOString(),
-          severity:  i % 3 === 0 ? 'high' : 'medium',
-        }));
+        document.getElementById('al-list').innerHTML =
+          '<tr><td colspan="4" class="muted">Failed to load alerts — check your connection.</td></tr>';
+        return;
+        
       }
 
       /* Apply client-side filtering (date, site, severity, sensor) */
