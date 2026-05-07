@@ -1,0 +1,351 @@
+<!--python3 -m http.server 8000-->
+<!--index.html- main dashboard home page- main job is for it to be easily readable for regualr non spesialised people-->
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Water Quality Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    *, *::before, *::after {box-sizing: border-box; margin: 0 ; padding: 0;}
+    :root{
+      --bg-surface: #ffffff;
+      --border-subtle: rgba(0,0,0,0.10);
+      --border-default: rgba(0,0,0,0.18);
+      --radius-lg: 12px;
+      --radius-md: 8px;
+      --text-primary: #1a1a18;
+      --text-secondary: #5f5e5a;
+      --text-tertiary: #888780;
+      --font-mono:"DM Mono", monospace;
+      --font-exo-2: "Exo 2", sans-serif;
+      --color-ph: #1835FA;
+      --color-turbidity: #EF9F27;
+      --color-temperature: #1D9E75;
+      --color-level: #9B59B6;
+
+    }
+
+    
+    body{
+      background-color: #e6f3e8;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem 0;
+      min-height: 100vh;
+      margin: 0;
+    }
+    main.container {
+      max-width: 420px;
+    }
+    .dashboard{
+      width: 100%;
+      max-width: 1200px;
+      padding: 0 1rem;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .topbar{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .name{
+      font-size: 25px;
+      font-weight: 600;
+      font-family: var(--font-exo-2);
+      color: darkblue;
+    }
+    .selecter{
+      font-family: var(--font-exo-2);
+      font-size: 13px;
+      color: var(--text-primary);
+      background: var(--bg-surface);
+      border: 0.5px solid darkblue;
+      border-radius: var(--radius-md);
+      padding: 7px 30px 7px 14px;
+    }
+    .summary-strip{
+      display: flex;
+      gap: 2.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 0.5px solid var(--border-subtle);
+      flex-wrap: wrap;
+    }
+    .summary-item label{
+      display: block;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-tertiary);
+      margin-bottom: 3px;
+    }
+    .reading-grid{
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .data-square{
+      background: var(--bg-surface);
+      border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+    }
+    .data-value{
+      font-size: 30px;
+      font-family: var(--font-exo-2);
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+    .data-label{
+      font-size: 10px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .data-units{
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+    .metric-card:hover {
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .trend-graph{
+      background: var(--bg-surface);
+      border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+    }
+    .trend-header{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .trend-title{
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .trend-wrap{
+      position: relative;
+      height: 380px;
+    }
+    .trend-placeholder{
+      height: 380px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0.5px dashed var(--border-default);
+      border-radius: var(--radius-md);
+      color: var(--text-tertiary);
+      font-size: 13px;
+    }
+    #trendGraph{
+      height: 100%;
+      width: 100%;
+    }
+    #ph-square { border-left: 6px solid var(--color-ph); }
+    #val-ph {color: var(--color-ph)}
+    #turbidity-square { border-left: 6px solid var(--color-turbidity); }
+    #val-turbidity {color: var(--color-turbidity)}
+    #temperature-square { border-left: 6px solid var(--color-temperature); }
+    #val-temperature {color: var(--color-temperature)}
+    #waterlevel-square { border-left: 6px solid var(--color-level); }
+    #val-waterlevel {color: var(--color-level)}
+  </style>
+</head>
+<body>  
+  <main class="dashboard" role="main">
+    <header class="topbar">
+      <div class="name">Water Quality Dashboard</div>
+      <select class="selecter" id="pageSelect">
+        <option value="index.html" selected>Dashboard</option>
+        <option value="">Alert Log</option>
+        <option value="advanced-graphs.html">Advanced Graphs</option>
+      </select>
+    </header>
+    <div class="summary-strip" role="status" aria-live="polite">
+      <div class="summary-item">
+        <label>Last sample:</label>
+        <span id="lastSample">-</span>
+      </div>
+      <div class="summary-item">
+        <label>Total alerts today:</label> 
+        <span class="alert" id="alertCount">-</span>
+      </div>
+      <div class="summary-item">
+        <label>Sites Monitored:</label>
+        <span id="siteCount">-</span>
+      </div>
+    </div>
+      <section class="reading-grid" aria-label="current data">
+        <div class="data-square" id="ph-square">
+          <div class="data-label">PH</div>
+          <div class="data-value" id="val-ph"></div>
+          <div class="data-units" >SAFE RANGE:6.5 - 8.5</div>
+          <span class="status-pill" id="pill-ph"></span>
+        </div>
+        
+        <div class="data-square" id="waterlevel-square">
+          <div class="data-label">WATER LEVEL(cm)</div>
+          <div class="data-value" id="val-waterlevel"></div>
+          <div class="data-units" ></div>
+          <span class="status-pill" id="pill-waterlevel"></span>
+        </div>
+
+        <div class="data-square" id="turbidity-square">
+          <div class="data-label">TURBIDITY(NTU)</div>
+          <div class="data-value" id="val-turbidity"></div>
+          <div class="data-units" >SAFE RANGE:0.0 - 4.0</div>
+          <span class="status-pill" id="pill-turbidity"></span>
+        </div>
+
+        <div class="data-square" id="temperature-square">
+          <div class="data-label">WATER TEMPERATURE(°C)</div>
+          <div class="data-value" id="val-temperature"></div>
+          <div class="data-units" ></div>
+          <span class="status-pill" id="pill-temperature"></span>
+        </div>
+
+
+      </section>
+
+      <section class="trend-graph">
+        <div class="trend-header">
+          <span class="trend-title">Trend Analysis</span>
+        </div>
+        <div class="trend-placeholder" id="trendPlaceholder">Awaiting data</div>
+        <div class="trend-wrap" id="trendWrap" style="display: none;">
+          <div id="trendGraph" aria-label="Trend graph for pH, water level, turbidity and water temperature"></div>
+        </div>
+      </section>
+    </main>
+<script>
+  const API = "https://zany-space-goldfish-pjpg4jp75v4q379qp-5000.app.github.dev/";
+
+  document.getElementById("pageSelect").addEventListener("change", function(){
+    const selectedPage=this.value;
+    window.location.href=selectedPage;
+  });
+
+  //renderGraph() takes in arrays of data and draws a graph using plotly
+
+  function renderGraph(labels, ph, turbidity_ntu, water_temperature_c, water_level_cm) {
+    document.getElementById('trendPlaceholder').style.display = 'none';
+    document.getElementById('trendWrap').style.display = 'block';
+
+      const traces=[
+        {
+          name: 'pH',
+          x: labels,
+          y: ph,
+          type: 'scatter',
+          mode: 'lines',
+          line: {color: '#185FA5', width: 2}
+        },
+        {
+          name: 'Turbidity',
+          x: labels,
+          y: turbidity_ntu,
+          type: 'scatter',
+          mode: 'lines',
+          line: {color: '#EF9F27', width: 2}
+        },
+        {
+          name: 'Water temperature',
+          x: labels,
+          y: water_temperature_c,
+          type: 'scatter',
+          mode: 'lines',
+          line: {color: '#1D9E75', width: 2},
+        },
+         {
+          name: 'Water Level',
+          x: labels,
+          y: water_level_cm,
+          type: 'scatter',
+          mode: 'lines',
+          line: {color: '#9B59B6', width: 2}
+         },
+      ];
+        
+        const layout ={
+          margin: {t: 10, r: 10, b: 30, l: 30},
+          paper_bgcolor: "transparent",
+          plot_bgcolor: "transparent",
+          hovermode: "x unified",
+          xaxis: {title: "Date"},
+          yaxis: {title: "Value"},
+        };
+        Plotly.react("trendGraph", traces, layout, { //used ai here to help the problem of having to destroy the graph every time
+          responsive: true,
+          displaylogo: false,
+        });
+  }
+    
+//loadLiveData() sends 4 api calls to get timeseries data for each sensor, then obtain the last item(most recent)
+//displays the readings on metric cards and calls renderGraph() so that it updates with new data
+  async function loadLiveData() {
+    try {
+      const siteId="all"
+    //ai was used for promise.all so that all metrics appear at the same time
+      const [phData, turbidityData, levelData, temperatureData] = await Promise.all([ 
+        fetch(`${API}/timeseries?site_code=${siteId}&metric=ph&freq=D`).then(r => r.json()),
+        fetch(`${API}/timeseries?site_code=${siteId}&metric=turbidity_ntu&freq=D`).then(r => r.json()),
+        fetch(`${API}/timeseries?site_code=${siteId}&metric=water_level_cm&freq=D`).then(r => r.json()),
+        fetch(`${API}/timeseries?site_code=${siteId}&metric=water_temperature_c&freq=D`).then(r => r.json()),
+      ]);
+      if (!phData.length || !turbidityData.length || !levelData.length || !temperatureData.length) {
+        console.error('One or more sensors returned no data');
+      return;
+}
+
+      const latestPh = phData[phData.length - 1];
+      const latestLevel = levelData[levelData.length - 1];
+      const latestTurbidity = turbidityData[turbidityData.length - 1];
+      const latestTemperature = temperatureData[temperatureData.length - 1];
+
+      document.getElementById('lastSample').textContent = latestPh.recorded_at;
+      document.getElementById('val-ph').textContent = latestPh?.ph;
+      document.getElementById('val-waterlevel').textContent = latestLevel.water_level_cm;
+      document.getElementById('val-turbidity').textContent = latestTurbidity.turbidity_ntu;
+      document.getElementById('val-temperature').textContent = latestTemperature.water_temperature_c;
+
+      renderGraph(
+        phData.map(p => p.recorded_at),
+        phData.map(p => p.ph),
+        turbidityData.map(p => p.turbidity_ntu),
+        temperatureData.map(p => p.water_temperature_c),
+        levelData.map(p => p.water_level_cm)
+      )
+
+    } catch (error) {
+      console.error('Error loading live data:', error);
+      document.getElementById('trendPlaceholder').textContent = 'Failed to load data, retrying...';
+      document.getElementById('trendPlaceholder').style.display = 'flex';
+      document.getElementById('trendWrap').style.display = 'none';
+    }
+  }
+
+  loadLiveData();
+  setInterval(loadLiveData, 5000);
+</script>
+  
+</body>
