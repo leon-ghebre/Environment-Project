@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "lint": "eslint assets/static/js",
+    "lint:fix": "eslint assets/static/js --fix",
+    "format": "prettier --write assets/static/js"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1"
+  }
+}
