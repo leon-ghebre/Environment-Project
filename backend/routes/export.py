@@ -123,6 +123,3 @@ def export_csv():
 
     finally:
         db.close()
-
-
-"""
