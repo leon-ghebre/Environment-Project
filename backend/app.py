@@ -18,7 +18,7 @@ from routes.timeseries import timeseries_bp
 
 from routes.alerts import alerts_bp
 
-# from routes.export import export_bp
+from routes.export import export_bp
 
 from flask_cors import CORS
 
@@ -31,7 +31,7 @@ app.register_blueprint(summary_bp)
 app.register_blueprint(timeseries_bp)
 
 app.register_blueprint(alerts_bp)
-# app.register_blueprint(export_bp)
+app.register_blueprint(export_bp)
 
 if __name__ == "__main__":
     app.run(debug=True)
