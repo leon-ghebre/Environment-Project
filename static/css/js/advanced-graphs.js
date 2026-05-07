@@ -4,6 +4,13 @@ import { getJSON } from "./api.js";
       const selectedPage=this.value;
       window.location.href=selectedPage;
       });
+      //pre sets the date filter to last 7 days when page loads
+      (function setDefaultDates() {
+        const to = new Date(), from = new Date();
+        from.setDate(from.getDate() - 7);
+        document.getElementById("dateTo").value   = to.toISOString().slice(0, 10);
+        document.getElementById("dateFrom").value = from.toISOString().slice(0, 10);
+      })();
       //returns a list of values from the checked sensors
     function getSelectedSensors(){
       const checkboxes = document.querySelectorAll(".sensor-checkbox input:checked");
@@ -150,7 +157,7 @@ import { getJSON } from "./api.js";
           type,
           mode,
           line: { color: s.color, width: 2 },//used ai for these next couple of lines
-          marker:{color: s.color, width: 2},
+          marker:{color: s.color, size: 4},
           hovertemplate: `<b>${s.label}</b>: %{y}<extra></extra>`
         };
       });
@@ -185,7 +192,11 @@ import { getJSON } from "./api.js";
  maps them to readable names and calls load graph with the first site*/
 async function loadSites() {
   try{
-    const sites   = await getJSON(`/sites`);
+    const today = new Date().toISOString().slice(0, 10);
+    const [sites, alertData] = await Promise.all([
+      getJSON("/sites"),
+      getJSON(`/api/alerts?from=${today}`).catch(() => []),
+    ]);
     const select = document.getElementById("siteSelector");
     const siteNames={
       "site_upstream": "Site upstream",
@@ -203,6 +214,8 @@ async function loadSites() {
       opt.textContent= siteNames[id];
       select.appendChild(opt);
     });
+    document.getElementById("siteCount").textContent  = sites.length;
+    document.getElementById("alertCount").textContent = alertData.length;
     loadGraph(sites[0]);
   }catch(error){
     console.error("failed to load sites");

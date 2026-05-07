@@ -105,6 +105,9 @@
         a.click();
       } catch { alert('Export failed — check your connection.'); }
     }
+    window.onDaysChange = onDaysChange;
+    window.updateSummary = updateSummary;
+    window.doExport = doExport;
 
     // Initialize page: update summary and load preview data
     document.addEventListener('DOMContentLoaded', () => { updateSummary(); refreshPreview(); });

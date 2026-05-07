@@ -66,12 +66,14 @@ import { getJSON } from "./api.js";
   async function loadLiveData() {
     try {
       const siteId="all";
+      const today = new Date().toISOString().slice(0, 10);
     //ai was used for promise.all so that all metrics appear at the same time
-      const [phData, turbidityData, levelData, temperatureData] = await Promise.all([ 
+      const [phData, turbidityData, levelData, temperatureData, alertData] = await Promise.all([ 
         getJSON(`/timeseries?site_code=${siteId}&metric=ph&freq=D`),
         getJSON(`/timeseries?site_code=${siteId}&metric=turbidity_ntu&freq=D`),
         getJSON(`/timeseries?site_code=${siteId}&metric=water_level_cm&freq=D`),
         getJSON(`/timeseries?site_code=${siteId}&metric=water_temperature_c&freq=D`),
+        getJSON(`/api/alerts?from=${today}`).catch(() => [])
       ]);
       if (!phData.length || !turbidityData.length || !levelData.length || !temperatureData.length) {
         console.error('One or more sensors returned no data');
@@ -84,6 +86,8 @@ import { getJSON } from "./api.js";
       const latestTemperature = temperatureData[temperatureData.length - 1];
 
       document.getElementById('lastSample').textContent = latestPh.recorded_at;
+      document.getElementById('siteCount').textContent = 1;
+      document.getElementById('alertCount').textContent = alertData.length;
       document.getElementById('val-ph').textContent = latestPh?.ph;
       document.getElementById('val-waterlevel').textContent = latestLevel.water_level_cm;
       document.getElementById('val-turbidity').textContent = latestTurbidity.turbidity_ntu;
@@ -104,6 +108,9 @@ import { getJSON } from "./api.js";
       document.getElementById('trendWrap').style.display = 'none';
     }
   }
+  async function poll() {
+    await loadLiveData();
+  setTimeout(poll, 5000);
+  }
 
-  loadLiveData();
-  setInterval(loadLiveData, 5000);
+  poll()

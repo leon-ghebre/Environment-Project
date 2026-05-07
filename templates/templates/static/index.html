@@ -1,4 +1,4 @@
-<!--
+<!--python3 -m http.server 8000
 -->
 <!--index.html- main dashboard home page- main job is for it to be easily readable for regualr non spesialised people-->
 
@@ -182,10 +182,10 @@
     <header class="topbar">
       <div class="name">Water Quality Dashboard</div>
       <select class="selecter" id="pageSelect">
-        <option value="pages/index.html" selected>Dashboard</option>
-        <option value="pages/alerts.html">Alert Log</option>
-        <option value="pages/advanced-graphs.html">Advanced Graphs</option>
-        <option value="pages/export.html" selected>Export</option>
+        <option value="/" selected>Dashboard</option>
+        <option value="/alerts.html">Alert Log</option>
+        <option value="/advanced-graphs.html">Advanced Graphs</option>
+        <option value="/export.html">Export</option>
       </select>
     </header>
     <div class="summary-strip" role="status" aria-live="polite">
@@ -244,5 +244,5 @@
         </div>
       </section>
     </main>
-<script type="module" src="/assets/static/js/index.js"></script>
+<script type="module" src="/static/js/index.js"></script>
   
