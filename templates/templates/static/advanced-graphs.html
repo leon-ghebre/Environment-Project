@@ -224,6 +224,11 @@
       color: var(--text-tertiary);
       font-size: 13px;
     }
+    /* mobile/tablet support */
+    @media (max-width: 600px) { 
+      .selecter { width: 100%; }
+      .checkbox-group { grid-template-columns: 1fr; }
+    }
     #advancedGraph {
       width: 100%;
       height: 380px;

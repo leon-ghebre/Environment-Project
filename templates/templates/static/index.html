@@ -170,6 +170,11 @@
     #val-temperature {color: var(--color-temperature)}
     #waterlevel-square { border-left: 6px solid var(--color-level); }
     #val-waterlevel {color: var(--color-level)}
+/* mobile/tablet support*/
+    @media (max-width: 600px) {
+      .selecter { width: 100%; }
+      .reading-grid { grid-template-columns: 1fr; }
+    }
   </style>
 
   <link rel="stylesheet" href="/static/css/theme.css"/>
