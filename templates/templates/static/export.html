@@ -180,7 +180,8 @@
     /* Main export form and preview layout */
     .export-layout {
       display: grid;
-      grid-template-columns: 280px 1fr;
+      grid-template-columns: 1fr;
+      justify-items: center;
       gap: 1.25rem;
       align-items: start;
     }
@@ -188,6 +189,8 @@
 
     /* Card container for forms and preview */
     .card {
+      width: 100%;
+      max-width: 600px;
       background: var(--bg-surface);
       border: 0.5px solid var(--border);
       border-radius: var(--radius-lg);
@@ -346,15 +349,11 @@
         <div class="form-group">
           <label>Date range</label>
           <select id="ex-days" class="selecter" onchange="onDaysChange()">
-            <option value="7">Last 7 days</option>
-            <option value="14">Last 14 days</option>
-            <option value="30" selected>Last 30 days</option>
-            <option value="90">Last 90 days</option>
             <option value="custom">Custom…</option>
           </select>
         </div>
 
-        <div class="form-group" id="custom-date-group" style="display:none;">
+        <div class="form-group" id="custom-date-group" style="display:flex;">
           <label>Custom range</label>
           <div class="date-range-row">
             <input type="date" id="ex-from" class="date-input" onchange="updateSummary()" />

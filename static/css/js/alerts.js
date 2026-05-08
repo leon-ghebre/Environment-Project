@@ -8,7 +8,7 @@ document.getElementById('today-date').textContent = new Date().toLocaleDateStrin
 // Default date range to match available data
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('dateFrom').value = '2022-01-01';
-  document.getElementById('dateTo').value   = '2023-12-31';
+  document.getElementById('dateTo').value   = '2022-12-31';
 });
 
 // Sensor types with labels and colors
@@ -84,8 +84,6 @@ async function loadAlerts() {
   }
 
   // Apply client-side filtering
-  if (from)     { alerts = alerts.filter(a => a.timestamp >= from); }
-  if (to)       { alerts = alerts.filter(a => a.timestamp.slice(0, 10) <= to); }
   if (site)     { alerts = alerts.filter(a => a.site_code === site); }
   if (severity) { alerts = alerts.filter(a => a.severity === severity); }
   if (active.length < Object.keys(SENSORS).length) {
@@ -100,3 +98,5 @@ async function loadAlerts() {
 window.loadAlerts = loadAlerts;
 
 document.addEventListener('DOMContentLoaded', loadAlerts);
+// Auto-refresh alerts every 10 seconds
+setInterval(loadAlerts, 10000);

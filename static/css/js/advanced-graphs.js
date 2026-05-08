@@ -9,7 +9,7 @@ document.getElementById("pageSelect").addEventListener("change", function(){
 //pre sets the date filter to match available data range
 (function setDefaultDates() {
   document.getElementById("dateFrom").value = "2022-01-01";
-  document.getElementById("dateTo").value   = "2023-12-31";
+  document.getElementById("dateTo").value   = "2022-05-31";
 })();
 
 //returns a list of values from the checked sensors

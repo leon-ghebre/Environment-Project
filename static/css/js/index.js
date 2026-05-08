@@ -37,6 +37,7 @@ import { getJSON } from "./api.js";
           type: 'scatter',
           mode: 'lines',
           line: {color: '#1D9E75', width: 2},
+          yaxis: 'y2',
         },
          {
           name: 'Water Level',
@@ -57,7 +58,7 @@ import { getJSON } from "./api.js";
           xaxis: {title: "Date"},
           yaxis: {title: "Value"},
           yaxis2: {
-            title: "Water Level (cm)",
+            title: "Temp (°C) / Level (cm)",
             overlaying: "y",
             side: "right",
             showgrid: false,

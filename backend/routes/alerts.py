@@ -114,7 +114,7 @@ def get_alerts():
         if end_date:
             query = query.filter(Alert.started_at <= end_date)
 
-        alerts = query.order_by(Alert.started_at.desc()).all()
+        alerts = query.order_by(Alert.started_at.desc()).limit(1000).all()
 
         response = []
 

@@ -113,4 +113,8 @@
     window.doExport = doExport;
 
     // Initialize page: update summary and load preview data
-    document.addEventListener('DOMContentLoaded', () => { updateSummary(); refreshPreview(); });
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('ex-from').value = '2022-01-01';
+      document.getElementById('ex-to').value   = '2023-12-31';
+      updateSummary();
+    });

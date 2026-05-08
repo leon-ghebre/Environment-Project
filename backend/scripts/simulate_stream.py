@@ -19,7 +19,7 @@ from config import CSV_PATH
 from database.database import Base, SessionLocal, engine
 from scripts.import_water import get_or_create_site, import_rows
 
-BATCH_SIZE = 12
+BATCH_SIZE = 50
 DELAY_SECONDS = 2
 
 
