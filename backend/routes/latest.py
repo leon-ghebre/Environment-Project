@@ -45,6 +45,7 @@ def get_latest():
         reading = (
             db.query(WaterReading)
             .filter(WaterReading.site_id == site.id)
+            .filter(WaterReading.sensor_fault.is_(False))
             .order_by(WaterReading.recorded_at.desc())
             .first()
         )
