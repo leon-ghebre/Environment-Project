@@ -1,5 +1,5 @@
  
- const API = 'http://127.0.0.1:5000';
+ const API = '';
  
  export async function getJSON(url) {
     const res = await fetch(API + url);

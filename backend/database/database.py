@@ -19,10 +19,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from config import DATABASE_URL
 
 # creates the databse engine
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False},
-)
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False, "timeout": 30})
 
 # creates the session factory
 SessionLocal = sessionmaker(

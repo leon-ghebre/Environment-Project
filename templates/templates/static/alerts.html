@@ -119,8 +119,8 @@
     .filter-date { font-family: var(--font-mono); font-size: 13px; color: var(--text-1); background: var(--bg-surface2); border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); padding: 7px 10px; width: 100%; cursor: pointer; appearance: none; }
 
     /* Color-code severity levels in dropdown */
-    .filter-selector option[value="high"]   { color: var(--critical); }
-    .filter-selector option[value="medium"] { color: var(--caution);  }
+    .filter-selector option[value="critical"]   { color: var(--critical); }
+    .filter-selector option[value="warning"] { color: var(--caution);  }
 
     .filter-group.sensors { grid-column: span 2; }
     .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -148,8 +148,6 @@
     .sev-medium { color: var(--caution);  font-weight: 600; }
   </style>
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}" />
-  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 </head>
 <body>
   <main class="dashboard" role="main">
@@ -160,15 +158,10 @@
         <div class="date-strip" id="today-date">—</div>
       </div>
       <div class="topbar-right">
-        <div class="theme-toggle" role="group" aria-label="Theme">
-          <button class="theme-btn" data-t="light"    onclick="setTheme('light')">LIGHT</button>
-          <button class="theme-btn" data-t="dark"     onclick="setTheme('dark')">DARK</button>
-          <button class="theme-btn" data-t="contrast" onclick="setTheme('contrast')">HC</button>
-        </div>
         <select class="selecter" onchange="if(this.value) window.location.href=this.value">
           <option value="/">Dashboard</option>
           <option value="/alerts.html" selected>Alert Log</option>
-          <option value="/trends.html">Advanced Graphs</option>
+          <option value="/advanced-graphs.html">Advanced Graphs</option>
           <option value="/export.html">Export</option>
         </select>
       </div>
@@ -187,9 +180,9 @@
         <span class="filter-label">Site</span>
         <select class="filter-selector" id="siteSelector" onchange="loadAlerts()">
           <option value="">All Sites</option>
-          <option value="Upstream">Upstream</option>
-          <option value="Downstream">Downstream</option>
-          <option value="Reservoir">Reservoir</option>
+          <option value="site_upstream">Upstream</option>
+          <option value="site_downstream">Downstream</option>
+          <option value="site_reservoir">Reservoir</option>
         </select>
       </div>
 
@@ -197,8 +190,8 @@
         <span class="filter-label">Severity</span>
         <select class="filter-selector" id="severityFilter" onchange="loadAlerts()">
           <option value="">All</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
+          <option value="critical">Critical</option>
+          <option value="warning">Warning</option>
         </select>
       </div>
 
@@ -224,11 +217,11 @@
             <label for="checkTurbidity"><span class="swatch" style="background:var(--color-turbidity)"></span>Turbidity</label>
           </div>
           <div class="sensor-checkbox flow">
-            <input type="checkbox" id="checkFlow" value="flow" checked onchange="loadAlerts()" />
-            <label for="checkFlow"><span class="swatch" style="background:var(--color-flow)"></span>Flow</label>
+            <input type="checkbox" id="checkConductivity" value="conductivity" checked onchange="loadAlerts()" />
+            <label for="checkConductivity"><span class="swatch" style="background:var(--color-flow)"></span>Conductivity</label>
           </div>
           <div class="sensor-checkbox level">
-            <input type="checkbox" id="checkLevel" value="level" checked onchange="loadAlerts()" />
+            <input type="checkbox" id="checkLevel" value="sensor_fault" checked onchange="loadAlerts()" />
             <label for="checkLevel"><span class="swatch" style="background:var(--color-level)"></span>Water Level</label>
           </div>
         </div>

@@ -38,9 +38,12 @@
       const site = document.getElementById('ex-site').value;
       const days = document.getElementById('ex-days').value;
       if (days === 'custom') {
-        return `site=${encodeURIComponent(site)}&from=${document.getElementById('ex-from').value}&to=${document.getElementById('ex-to').value}`;
+        return `site_code=${encodeURIComponent(site)}&start=${document.getElementById('ex-from').value}&end=${document.getElementById('ex-to').value}`;
       }
-      return `site=${encodeURIComponent(site)}&days=${days}`;
+      const to = new Date().toISOString().slice(0, 10);
+      const from = new Date();
+      from.setDate(from.getDate() - parseInt(days));
+      return `site_code=${encodeURIComponent(site)}&start=2022-01-01&end=2023-12-31`;
     }
 
     // Fetch and display preview data from API
@@ -49,7 +52,7 @@
       const meta  = document.getElementById('ex-meta');
       tbody.innerHTML = '<tr><td colspan="10" class="muted">Loading…</td></tr>';
       try {
-        const rows = await getJSON(`/readings?${getParams()}&limit=20`);
+        const rows = await getJSON(`/export?${getParams()}`);
         renderPreview(rows, meta, tbody);
       } catch {
         const demo = Array.from({ length: 8 }, (_, i) => ({
@@ -93,7 +96,7 @@
     // eslint-disable-next-line no-unused-vars
     async function doExport(fmt) {
       try {
-        const res  = await fetch(`/api/export?${getParams()}&format=${fmt}`);
+        const res  = await fetch(`/export?${getParams()}&format=${fmt}`);
         const blob = await res.blob();
         const a    = document.createElement('a');
         a.href     = URL.createObjectURL(blob);

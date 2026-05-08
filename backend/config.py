@@ -24,6 +24,9 @@ VALID_METRICS = [
     "water_temperature_c",
     "water_level_cm",
     "light_lux",
+    "wx_temp_c",
+    "wx_rh_pct",
+    "wx_rain_mm_hr",
 ]
 
 # Weather context columns that will be available in export but not valid for

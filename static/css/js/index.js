@@ -1,4 +1,5 @@
 
+
 import { getJSON } from "./api.js";
 
   document.getElementById("pageSelect").addEventListener("change", function(){
@@ -43,7 +44,8 @@ import { getJSON } from "./api.js";
           y: water_level_cm,
           type: 'scatter',
           mode: 'lines',
-          line: {color: '#9B59B6', width: 2}
+          line: {color: '#9B59B6', width: 2},
+          yaxis: 'y2',
          },
       ];
         
@@ -54,8 +56,15 @@ import { getJSON } from "./api.js";
           hovermode: "x unified",
           xaxis: {title: "Date"},
           yaxis: {title: "Value"},
+          yaxis2: {
+            title: "Water Level (cm)",
+            overlaying: "y",
+            side: "right",
+            showgrid: false,
+          }
         };
-        Plotly.react("trendGraph", traces, layout, { //used ai here to help the problem of having to destroy the graph every time
+        Plotly.purge("trendGraph");
+        Plotly.newPlot("trendGraph", traces, layout, {
           responsive: true,
           displaylogo: false,
         });
@@ -63,42 +72,49 @@ import { getJSON } from "./api.js";
     
 //loadLiveData() sends 4 api calls to get timeseries data for each sensor, then obtain the last item(most recent)
 //displays the readings on metric cards and calls renderGraph() so that it updates with new data
+  let cachedSites = [];
+
   async function loadLiveData() {
     try {
-      const siteId="all";
+      if (!cachedSites.length) {
+        cachedSites = await getJSON('/sites');
+      }
+      const siteId = document.getElementById('siteSelect')?.value || cachedSites[0];
+      const freq = document.getElementById('freqSelect')?.value || 'h';
       const today = new Date().toISOString().slice(0, 10);
-    //ai was used for promise.all so that all metrics appear at the same time
-      const [phData, turbidityData, levelData, temperatureData, alertData] = await Promise.all([ 
-        getJSON(`/timeseries?site_code=${siteId}&metric=ph&freq=D`),
-        getJSON(`/timeseries?site_code=${siteId}&metric=turbidity_ntu&freq=D`),
-        getJSON(`/timeseries?site_code=${siteId}&metric=water_level_cm&freq=D`),
-        getJSON(`/timeseries?site_code=${siteId}&metric=water_temperature_c&freq=D`),
-        getJSON(`/api/alerts?from=${today}`).catch(() => [])
+      
+      const [phData, turbidityData, temperatureData, levelData, latestData] = await Promise.all([
+        getJSON(`/timeseries?site_code=${siteId}&metric=ph&freq=${freq}`),
+        getJSON(`/timeseries?site_code=${siteId}&metric=turbidity_ntu&freq=${freq}`),
+        getJSON(`/timeseries?site_code=${siteId}&metric=water_temperature_c&freq=${freq}`),
+        getJSON(`/timeseries?site_code=${siteId}&metric=water_level_cm&freq=${freq}`),
+        getJSON(`/latest?site_code=${siteId}`)
       ]);
+
       if (!phData.length || !turbidityData.length || !levelData.length || !temperatureData.length) {
         console.error('One or more sensors returned no data');
       return;
 }
 
       const latestPh = phData[phData.length - 1];
-      const latestLevel = levelData[levelData.length - 1];
       const latestTurbidity = turbidityData[turbidityData.length - 1];
+      const latestLevel = levelData[levelData.length - 1];
       const latestTemperature = temperatureData[temperatureData.length - 1];
 
-      document.getElementById('lastSample').textContent = latestPh.recorded_at;
-      document.getElementById('siteCount').textContent = 1;
-      document.getElementById('alertCount').textContent = alertData.length;
-      document.getElementById('val-ph').textContent = latestPh?.ph;
-      document.getElementById('val-waterlevel').textContent = latestLevel.water_level_cm;
-      document.getElementById('val-turbidity').textContent = latestTurbidity.turbidity_ntu;
-      document.getElementById('val-temperature').textContent = latestTemperature.water_temperature_c;
+      document.getElementById('lastSample').textContent = latestData.recorded_at.replace('T', ' ');
+
+      document.getElementById('siteCount').textContent = cachedSites.length;
+      document.getElementById('val-ph').textContent = latestData?.ph?.toFixed(2);
+      document.getElementById('val-turbidity').textContent = latestData?.turbidity_ntu?.toFixed(2);
+      document.getElementById('val-temperature').textContent = latestData?.water_temperature_c?.toFixed(1);
+      document.getElementById('val-waterlevel').textContent = latestData?.water_level_cm?.toFixed(1);
 
       renderGraph(
         phData.map(p => p.recorded_at),
-        phData.map(p => p.ph),
-        turbidityData.map(p => p.turbidity_ntu),
-        temperatureData.map(p => p.water_temperature_c),
-        levelData.map(p => p.water_level_cm)
+        phData.map(p => p.avg),
+        turbidityData.map(p => p.avg),
+        temperatureData.map(p => p.avg),
+        levelData.map(p => p.avg)
       );
 
     } catch (error) {
@@ -108,9 +124,7 @@ import { getJSON } from "./api.js";
       document.getElementById('trendWrap').style.display = 'none';
     }
   }
-  async function poll() {
-    await loadLiveData();
-  setTimeout(poll, 5000);
-  }
 
-  poll()
+loadLiveData();
+setInterval(loadLiveData, 5000);
+window.loadLiveData = loadLiveData;

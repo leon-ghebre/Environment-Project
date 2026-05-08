@@ -226,8 +226,8 @@
 
   </style>
 
-  <link rel="stylesheet" href="{{ url_for('static',filename='css/theme.css')}}"/>
-  <script src="{{ url_for('static',filename='js/theme.js' )}}"></script>
+  <link rel="stylesheet" href="/static/css/theme.css"/>
+  <script src="/static/js/theme.js"></script>
 
 </head>
 <body>  
@@ -243,15 +243,6 @@
       </select>
     </header>
 
-    <div class="summary-strip" role="status" aria-live="polite">
-      <div class="summary-item">
-        <label>Last sample:</label>
-        <span id="lastSample">-</span>
-      </div>
-
-      <div class="summary-item">
-        <label>Total alerts today:</label> 
-        <span class="alert" id="alertCount">-</span>
       </div>
 
       <div class="summary-item">

@@ -172,8 +172,8 @@
     #val-waterlevel {color: var(--color-level)}
   </style>
 
-  <link rel="stylesheet" href="{{ url_for('static',filename='css/theme.css')}}"/>
-  <script src="{{ url_for('static',filename='js/theme.js' )}}"></script>
+  <link rel="stylesheet" href="/static/css/theme.css"/>
+  <script src="/static/js/theme.js"></script>
 
 
 </head>
@@ -181,6 +181,11 @@
   <main class="dashboard" role="main">
     <header class="topbar">
       <div class="name">Water Quality Dashboard</div>
+      <select class="selecter" id="siteSelect" onchange="loadLiveData()">
+        <option value="site_downstream">Site Downstream</option>
+        <option value="site_upstream">Site Upstream</option>
+        <option value="site_reservoir">Site Reservoir</option>
+      </select>
       <select class="selecter" id="pageSelect">
         <option value="/" selected>Dashboard</option>
         <option value="/alerts.html">Alert Log</option>
@@ -188,14 +193,13 @@
         <option value="/export.html">Export</option>
       </select>
     </header>
+    </header>
     <div class="summary-strip" role="status" aria-live="polite">
       <div class="summary-item">
         <label>Last sample:</label>
         <span id="lastSample">-</span>
       </div>
       <div class="summary-item">
-        <label>Total alerts today:</label> 
-        <span class="alert" id="alertCount">-</span>
       </div>
       <div class="summary-item">
         <label>Sites Monitored:</label>
@@ -207,28 +211,28 @@
           <div class="data-label">PH</div>
           <div class="data-value" id="val-ph"></div>
           <div class="data-units" >SAFE RANGE:6.5 - 8.5</div>
-          <span class="status-pill" id="pill-ph"></span>
+          
         </div>
         
         <div class="data-square" id="waterlevel-square">
           <div class="data-label">WATER LEVEL(cm)</div>
           <div class="data-value" id="val-waterlevel"></div>
           <div class="data-units" ></div>
-          <span class="status-pill" id="pill-waterlevel"></span>
+          
         </div>
 
         <div class="data-square" id="turbidity-square">
           <div class="data-label">TURBIDITY(NTU)</div>
           <div class="data-value" id="val-turbidity"></div>
           <div class="data-units" >SAFE RANGE:0.0 - 4.0</div>
-          <span class="status-pill" id="pill-turbidity"></span>
+          
         </div>
 
         <div class="data-square" id="temperature-square">
           <div class="data-label">WATER TEMPERATURE(°C)</div>
           <div class="data-value" id="val-temperature"></div>
           <div class="data-units" ></div>
-          <span class="status-pill" id="pill-temperature"></span>
+        
         </div>
 
 
@@ -237,12 +241,15 @@
       <section class="trend-graph">
         <div class="trend-header">
           <span class="trend-title">Trend Analysis</span>
+          <select id="freqSelect" onchange="loadLiveData()">
+            <option value="h">Hourly</option>
+            <option value="D">Daily</option>
+          </select>
         </div>
         <div class="trend-placeholder" id="trendPlaceholder">Awaiting data</div>
         <div class="trend-wrap" id="trendWrap" style="display: none;">
           <div id="trendGraph" aria-label="Trend graph for pH, water level, turbidity and water temperature"></div>
         </div>
       </section>
-    </main>
 <script type="module" src="/static/js/index.js"></script>
   

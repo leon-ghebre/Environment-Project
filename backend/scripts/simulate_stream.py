@@ -19,8 +19,8 @@ from config import CSV_PATH
 from database.database import Base, SessionLocal, engine
 from scripts.import_water import get_or_create_site, import_rows
 
-BATCH_SIZE = 100
-DELAY_SECONDS = 5
+BATCH_SIZE = 12
+DELAY_SECONDS = 2
 
 
 def main():
@@ -71,6 +71,7 @@ def main():
         df = pd.read_csv(CSV_PATH, parse_dates=["timestamp"])
         df = df.dropna(subset=["timestamp"])
         df = df.drop_duplicates(subset=["site_id", "timestamp"], keep="first")
+        df = df.sort_values("timestamp").reset_index(drop=True)
 
         total = len(df)
 

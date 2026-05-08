@@ -294,8 +294,8 @@
     .muted { color: var(--text-3); font-style: italic; font-size: 12px; }
   </style>
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}" />
-  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  <link rel="stylesheet" href="/static/css/theme.css" />
+  <script src="/static/js/theme.js"></script>
   
 </head>
 <body>
@@ -307,15 +307,10 @@
         <div class="date-strip" id="today-date">—</div>
       </div>
       <div class="topbar-right">
-        <div class="theme-toggle" role="group" aria-label="Theme">
-          <button class="theme-btn active" data-t="light"    onclick="setTheme('light')">LIGHT</button>
-          <button class="theme-btn"        data-t="dark"     onclick="setTheme('dark')">DARK</button>
-          <button class="theme-btn"        data-t="contrast" onclick="setTheme('contrast')">HC</button>
-        </div>
         <select class="selecter" onchange="if(this.value) window.location.href=this.value">
           <option value="/">Home</option>
           <option value="/alerts.html">Alert Log</option>
-          <option value="/trends.html">Advanced Graphs</option>
+          <option value="/advanced-graphs.html">Advanced Graphs</option>
           <option value="/export.html" selected>Export</option>
         </select>
       </div>
@@ -331,10 +326,6 @@
         <label>Period</label>
         <span id="sum-period">Last 30 days</span>
       </div>
-      <div class="summary-item">
-        <label>Rows previewed</label>
-        <span id="sum-rows">—</span>
-      </div>
     </div>
 
     <div class="export-layout">
@@ -345,10 +336,10 @@
         <div class="form-group">
           <label>Site</label>
           <select id="ex-site" class="selecter" onchange="updateSummary()">
-            <option value="">All Sites</option>
-            <option>Upstream</option>
-            <option>Downstream</option>
-            <option>Reservoir</option>
+            
+            <option value="site_upstream">Upstream</option>
+            <option value="site_downstream">Downstream</option>
+            <option value="site_reservoir">Reservoir</option>
           </select>
         </div>
 
@@ -374,30 +365,8 @@
 
         <div class="btn-group">
           <button class="btn btn-primary" onclick="doExport('csv')">⬇ Download CSV</button>
-          <button class="btn btn-ghost"   onclick="doExport('json')">⬇ Download JSON</button>
         </div>
       </div>
-
-      <div class="card">
-        <div class="preview-header">
-          <div class="card-title">Preview</div>
-          <button class="btn btn-ghost btn-sm" onclick="refreshPreview()">↻ Refresh</button>
-        </div>
-        <div class="ex-meta" id="ex-meta"></div>
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Timestamp</th><th>Site</th><th>pH</th><th>Turbidity</th>
-                <th>Conductivity</th><th>Water Temp</th><th>Water Level</th>
-                <th>Air Temp</th><th>Humidity</th><th>Rainfall</th>
-              </tr>
-            </thead>
-            <tbody id="ex-tbody">
-              <tr><td colspan="10" class="muted">Loading…</td></tr>
-            </tbody>
-          </table>
-        </div>
       </div>
 
     </div>

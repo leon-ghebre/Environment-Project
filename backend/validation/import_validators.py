@@ -172,6 +172,8 @@ def validate_row(
 
     if is_outside_range(water_level, WATER_LEVEL_MIN, WATER_LEVEL_MAX):
         fault_reasons.append("water level outside expected range")
+    if water_level == 800.0:
+        fault_reasons.append("water level sensor overflow — reading capped at 800cm")
 
     if is_outside_range(light, LIGHT_MIN, LIGHT_MAX):
         fault_reasons.append("light outside expected range")

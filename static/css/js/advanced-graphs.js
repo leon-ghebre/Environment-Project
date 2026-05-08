@@ -1,22 +1,22 @@
 import { getJSON } from "./api.js";
-    //function for the page selector
-    document.getElementById("pageSelect").addEventListener("change", function(){
-      const selectedPage=this.value;
-      window.location.href=selectedPage;
-      });
-      //pre sets the date filter to last 7 days when page loads
-      (function setDefaultDates() {
-        const to = new Date(), from = new Date();
-        from.setDate(from.getDate() - 7);
-        document.getElementById("dateTo").value   = to.toISOString().slice(0, 10);
-        document.getElementById("dateFrom").value = from.toISOString().slice(0, 10);
-      })();
-      //returns a list of values from the checked sensors
-    function getSelectedSensors(){
-      const checkboxes = document.querySelectorAll(".sensor-checkbox input:checked");
-      return Array.from(checkboxes).map(cb => cb.value);
-    }
-    
+
+//function for the page selector
+document.getElementById("pageSelect").addEventListener("change", function(){
+  const selectedPage = this.value;
+  window.location.href = selectedPage;
+});
+
+//pre sets the date filter to match available data range
+(function setDefaultDates() {
+  document.getElementById("dateFrom").value = "2022-01-01";
+  document.getElementById("dateTo").value   = "2023-12-31";
+})();
+
+//returns a list of values from the checked sensors
+function getSelectedSensors(){
+  const checkboxes = document.querySelectorAll(".sensor-checkbox input:checked");
+  return Array.from(checkboxes).map(cb => cb.value);
+}
       
     const sensors= {
       ph:{
@@ -40,7 +40,7 @@ import { getJSON } from "./api.js";
       },
       conductivity:{
           label: "Conductivity",
-          api: "conductivity_us_cm",
+          api: "conductivity_uS_cm",
           color: "#6bff15" 
         },
         temperature:{
@@ -133,12 +133,12 @@ import { getJSON } from "./api.js";
         return getJSON(`/timeseries?${parametres}`)
           .then(data =>{
             if (!Array.isArray(data)) {
-              console.error("BAD RESPONSE for", id, data); // used ai for help with console error detection 
+              console.error("BAD RESPONSE for", id, data);
               return { id, data: [] };
             }
             return{id, data};
-          
-          });
+          })
+          .catch(() => ({ id, data: [] }));
         }));
         const hasData = results.some(({data}) => data.length > 0);
         if (!hasData) {
@@ -153,7 +153,7 @@ import { getJSON } from "./api.js";
         return {
           name: s.label,
          x: data.map(p => p.recorded_at|| p.timestamp),
-         y: data.map(p => p[s.api]),
+         y: data.map(p => p.avg),
           type,
           mode,
           line: { color: s.color, width: 2 },//used ai for these next couple of lines
@@ -195,8 +195,8 @@ async function loadSites() {
     const today = new Date().toISOString().slice(0, 10);
     const [sites, alertData] = await Promise.all([
       getJSON("/sites"),
-      getJSON(`/api/alerts?from=${today}`).catch(() => []),
-    ]);
+      getJSON(`/alerts?start=${today}`).catch(() => []),
+]);
     const select = document.getElementById("siteSelector");
     const siteNames={
       "site_upstream": "Site upstream",
@@ -215,7 +215,6 @@ async function loadSites() {
       select.appendChild(opt);
     });
     document.getElementById("siteCount").textContent  = sites.length;
-    document.getElementById("alertCount").textContent = alertData.length;
     loadGraph(sites[0]);
   }catch(error){
     console.error("failed to load sites");
@@ -223,5 +222,10 @@ async function loadSites() {
   }
      
 }
-  
+
+// Auto-refresh every 10 seconds
+setInterval(() => {
+  const site = document.getElementById("siteSelector").value;
+  if (site) loadGraph(site);
+}, 10000);
 window.addEventListener("DOMContentLoaded",loadSites);
