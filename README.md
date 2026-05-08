@@ -39,7 +39,8 @@ pip install -r requirements-dev.txt
 pre-commit install
 
 ### Running the API
-python app.py
+python -m scripts.simulate_stream
+python app.py (seperate terminal)
 
 The API will start at http://127.0.0.1:5000
 
