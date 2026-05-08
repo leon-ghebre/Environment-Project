@@ -164,8 +164,13 @@
     .sensor-checkbox input {
       position: absolute;
       opacity: 0;
-      width: 0;
-      height: 0;
+      width: 1px; /*made sure these had dimensions so its keyboard accessible*/
+      height: 1px;
+      overflow: visible;
+    }
+    .sensor-checkbox input:focus-visible + label {
+      outline: 2px solid #185FA5;
+      outline-offset: 2px;
     }
     .sensor-checkbox.ph input:checked + label { border-color: var(--color-ph); background: rgba(24,95,165,0.08);  }
     .sensor-checkbox.turbidity input:checked + label { border-color: var(--color-turbidity); background: rgba(239,159,39,0.08); }
@@ -253,8 +258,8 @@
     </div>
     <section class="filter-box" aria-label="Graph controls">
       <div class="filter-group">
-        <span class="filter-label">site</span>
-        <select class="filter-selector" id="siteSelector" aria-label="Select site"></select>
+        <label class="filter-label" for="siteSelector">Site</label>
+        <select class="filter-selector" id="siteSelector"></select>
       </div>
       <div class="filter-group">
         <span class="filter-label">Graph type</span>
