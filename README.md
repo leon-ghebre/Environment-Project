@@ -1,94 +1,267 @@
-# Environment-Project
+# Environment Project
 
-# Water Quality Monitoring Dashboard
+Water quality monitoring system designed for environmental researchers, farmers, and public health officers.
 
-A web application for monitoring water quality sensor data across multiple sites in South Africa. 
-Built for farmers, environmental researchers, and public health officers to detect contamination risks and analyse trends.
+The system provides monitoring dashboards, alerts, historical trend analysis, CSV exports, and simulated live sensor streaming.
 
-## System Overview
+---
 
-The system processes water quality data from CSV datasets using a Flask backend, performs validation and aggregation, and exposes the data via REST API endpoints for frontend visualisation.
+# Features
 
-## Tech Stack
+- Water quality monitoring across multiple sites
+- Real-time style streaming simulation
+- Alerts and contamination monitoring
+- Historical trend analysis
+- CSV dataset export
+- Sensor fault detection and validation
+- Accessibility and high-contrast support
+- REST API backend using Flask + SQLAlchemy
 
-**Backend:** Python, Flask, pandas  
-**Frontend:** HTML, CSS, Javascript  
-**Data:** CSV dataset — 200k+ sensor readings across multiple sites
+---
 
-## Setup
+# Tech Stack
 
-### Prerequisites
-- Python 3.11+
-- pip
+## Backend
+- Python
+- Flask
+- SQLAlchemy
+- SQLite
+- Pandas
 
-### Installation
+## Frontend
+- HTML
+- CSS
+- JavaScript
 
-# Clone the repo
+## Testing & Tooling
+- pytest
+- flake8
+- black
+- pre-commit
+- GitHub Actions
+
+---
+
+# Project Structure
+
+```text
+backend/
+├── app.py
+├── scripts/
+│   ├── import_water.py
+│   └── simulate_stream.py
+├── database/
+├── routes/
+├── services/
+├── validation/
+├── templates/
+├── static/
+└── tests/
+```
+
+---
+
+# Installation
+
+## 1. Clone the repository
+
+```bash
 git clone https://github.com/leon-ghebre/Environment-Project.git
+cd Environment-Project
+```
 
-# Navigate to backend
+## 2. Install dependencies
+
+```bash
+pip install -r backend/requirements.txt
+```
+
+---
+
+# Running the Project
+
+The project requires two terminals.
+
+---
+
+## Terminal 1 — Run the Flask Backend
+
+```bash
 cd backend
+python app.py
+```
 
-# Install production dependencies
-pip install -r requirements.txt
+This starts the Flask API server.
 
-# Install dev dependencies (linting, testing)
-pip install -r requirements-dev.txt
+The backend will usually run on:
 
-# Install pre-commit hooks (required for all contributors)
-pre-commit install
+```text
+http://127.0.0.1:5000
+```
 
-### Running the API
+---
+
+## Terminal 2 — Run the Streaming Simulation
+
+Open a second terminal:
+
+```bash
+cd backend
 python -m scripts.simulate_stream
-python app.py (seperate terminal)
+```
 
-The API will start at http://127.0.0.1:5000
+This simulates live sensor readings being streamed into the database in batches.
 
-## API Endpoints
+The script:
 
-| Method | Endpoint | Description | Persona |
-|---|---|---|---|
-| GET | /sites | Returns all unique site IDs | All |
-| GET | /latest?site_id= | Most recent reading for a site | Lebo Xhosa |
-| GET | /summary?site_id= | Latest key metrics for a site | Lebo Xhosa |
-| GET | /timeseries | Aggregated readings over time | Jack Wilshere, George Weah |
-| GET | /alerts | Alert events filtered by severity | Lebo Xhosa, George Weah |
-| GET | /export | Download filtered data as CSV | Jack Wilshere |
+- imports rows in batches
+- waits between batches
+- simulates live environmental monitoring updates
 
-Full parameter details in the Wiki.
+---
 
-## Project Structure
+# Example API Endpoints
 
-- `backend/`
-  - `app.py` — Entry point, registers all route blueprints
-  - `config.py` — All constants and valid values
-  - `routes/` — HTTP route handlers, no business logic
-  - `services/` — Data loading, filtering, aggregation
-  - `validation/` — Input validation for all endpoints
-  - `scripts/` — Contains script for setting and loading CSV data into the database 
-  - `tests/` — Pytest test suite
-- `frontend/`
-'''
-## Coding Standards
+## Get monitoring sites
 
-This project uses Black and Flake8 enforced via pre-commit hooks.
-Line length: 100 characters.
-Docstring format: Google style.
-Naming: snake_case variables/functions, UPPER_SNAKE_CASE constants, PascalCase classes.
+```text
+GET /sites
+```
 
-# Format code manually
+Example:
+
+```bash
+curl "http://127.0.0.1:5000/sites"
+```
+
+---
+
+## Get latest reading
+
+```text
+GET /latest?site_code=site_upstream
+```
+
+Example:
+
+```bash
+curl "http://127.0.0.1:5000/latest?site_code=site_upstream"
+```
+
+---
+
+## Get alerts
+
+```text
+GET /alerts
+```
+
+Example:
+
+```bash
+curl "http://127.0.0.1:5000/alerts"
+```
+
+---
+
+## Get historical timeseries data
+
+```text
+GET /timeseries
+```
+
+Example:
+
+```bash
+curl "http://127.0.0.1:5000/timeseries?site_code=site_upstream&metric=ph&freq=D"
+```
+
+---
+
+# Running Tests
+
+## Backend Tests
+
+```bash
+cd backend
+pytest tests -v
+```
+
+---
+
+# Code Quality
+
+## Run flake8
+
+```bash
+flake8
+```
+
+## Run black
+
+```bash
 black .
+```
 
-# Check for linting issues
-flake8 .
+---
 
-Pre-commit hooks run both automatically before every commit.
-Full standards documented in the Wiki.
+# Personas
 
-## Contributing
+The system was designed around three primary personas:
 
-- Never commit directly to main
-- Create a feature branch for each user story
-- Open a pull request and get one review before merging
-- All PRs must pass Black and Flake8 before merge
-- Reference the relevant GitHub issue number in your PR description
+## Lebo Xhosa
+Farmer working in remote areas with poor connectivity who needs simple safe/unsafe water monitoring.
+
+## Jack Wilshere
+Environmental researcher analysing long-term trends and exporting datasets.
+
+## George Weah
+Public health officer monitoring contamination risks and prioritising alerts.
+
+---
+
+# Accessibility
+
+The frontend includes:
+
+- high-contrast support
+- keyboard navigation support
+- responsive layouts
+- WCAG-aware colour choices
+- accessible filtering and alerts
+
+---
+
+# Validation Features
+
+The backend validates:
+
+- impossible sensor readings
+- invalid timestamps
+- duplicate readings
+- invalid alert flags
+- status mismatches
+- faulty sensor values
+
+Faulty readings are stored with:
+
+```text
+sensor_fault = True
+fault_reason = "..."
+```
+
+This preserves traceability without polluting dashboard calculations.
+
+---
+
+# Continuous Integration
+
+GitHub Actions automatically runs:
+
+- pytest
+- formatting checks
+- linting validation
+
+on pushes and pull requests.
+
+---
